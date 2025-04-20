@@ -2,16 +2,12 @@
 import React, { useRef, useEffect, useState } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { FaFilePdf, FaShareAlt, FaTwitter, FaFacebook } from "react-icons/fa";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import { FaTwitter, FaFacebook, FaFilePdf } from "react-icons/fa";
 import AncestryPieChart, { AncestryDatum } from "./AncestryPieChart";
 
 interface ResultPanelProps {
   loading: boolean;
   progress: number;
-  fileName?: string;
-  fileSize?: string;
   result: string;
   ancestryData: AncestryDatum[];
   onDownloadPDF: () => void;
@@ -22,8 +18,6 @@ interface ResultPanelProps {
 export default function ResultPanel({
   loading,
   progress,
-  fileName,
-  fileSize,
   result,
   ancestryData,
   onDownloadPDF,

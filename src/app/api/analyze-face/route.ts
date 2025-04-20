@@ -121,8 +121,12 @@ export async function POST(req: NextRequest) {
       analysis: result,
       ancestryData: ancestryData
     });
-  } catch (err: any) {
-    errorText = err?.message || JSON.stringify(err);
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      errorText = err.message;
+    } else {
+      errorText = String(err);
+    }
     return NextResponse.json({ error: errorText }, { status: 500 });
   }
 }

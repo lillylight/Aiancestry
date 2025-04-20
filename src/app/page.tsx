@@ -1,11 +1,8 @@
 "use client";
-import React, { useState, useRef } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import UploadArea from "../components/UploadArea";
-import ResultPanel from "../components/ResultPanel";
 import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
-import { FaArrowRight, FaArrowLeft, FaFilePdf, FaTwitter, FaFacebook, FaShare, FaTree } from "react-icons/fa";
-import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import { FaFilePdf, FaTwitter, FaFacebook, FaShare } from "react-icons/fa";
 
 // Utility: Clean and format the result for better readability
 function cleanAndFormatResult(raw: string): string {
