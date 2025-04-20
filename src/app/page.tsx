@@ -3,40 +3,9 @@ import React, { useState, useRef } from "react";
 import axios from "axios";
 import UploadArea from "../components/UploadArea";
 import ResultPanel from "../components/ResultPanel";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
 import { FaArrowRight, FaArrowLeft, FaFilePdf, FaTwitter, FaFacebook, FaShare, FaTree } from "react-icons/fa";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
-
-function extractAncestryData(resultText: string): AncestryDatum[] {
-  // Parse ancestry percentages section
-  const ancestrySection = resultText.split('ANCESTRY PERCENTAGES:')[1]?.split('FEATURE ANALYSIS:')[0] || '';
-  const matches = ancestrySection
-    .split('\n')
-    .filter(line => line.includes('%'))
-    .map(line => {
-      const match = line.match(/([^:]+):\s*(\d+)%/);
-      if (match) {
-        const region = match[1].trim();
-        const percent = parseInt(match[2], 10);
-        if (region && !isNaN(percent) && percent > 0) {
-          return { region, percent };
-        }
-      }
-      return null;
-    })
-    .filter(item => item !== null);
-
-  return matches;
-}
-
-function extractFeatureHighlights(resultText: string): string[] {
-  const lines = resultText.split('\n').filter(line =>
-    /nose|skin|eye|lip|ear|jaw|cheek|brow|forehead|chin|line|feature/i.test(line)
-  );
-  return lines;
-}
 
 // Utility: Clean and format the result for better readability
 function cleanAndFormatResult(raw: string): string {
@@ -72,25 +41,6 @@ function cleanAndFormatResult(raw: string): string {
   return cleaned;
 }
 
-// Utility: Remove disclaimer-like lines from a string
-function removeDisclaimers(text: string): string {
-  return text
-    .split(/\n|<br\s*\/?\s*>/)
-    .filter(line => !/disclaimer|experimental|fun|not a replacement|entertainment|cannot replace|no data is stored|should not be used/i.test(line))
-    .join('\n');
-}
-
-// Only show summary data (regions/countries/tribes/percentages) on summary card
-function extractSummarySection(resultText: string): string {
-  const summaryStart = resultText.indexOf('SUMMARY:');
-  if (summaryStart === -1) return '';
-  // Get everything after 'SUMMARY:'
-  let summary = resultText.slice(summaryStart + 'SUMMARY:'.length).trim();
-  // Remove any extra explanations, keep only lines with region/country/tribe and %
-  summary = summary.split('\n').filter(line => /%/.test(line)).join('\n');
-  return summary;
-}
-
 function splitResultCards(text: string): string[] {
   const paras = text.split(/\n\s*\n|\n/).filter(Boolean);
   const chunkSize = Math.ceil(paras.length / 3);
@@ -103,13 +53,10 @@ function splitResultCards(text: string): string[] {
 
 export default function Home() {
   const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
-  const [fileName, setFileName] = useState<string | undefined>(undefined);
-  const [fileSize, setFileSize] = useState<string | undefined>(undefined);
   const [step, setStep] = useState<'upload' | 'processing' | 'result'>('upload');
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -119,9 +66,6 @@ export default function Home() {
   const handleDrop = (files: File[]) => {
     const file = files[0];
     setImage(file);
-    setFileName(file.name);
-    setFileSize((file.size / 1024 / 1024).toFixed(2) + " MB");
-    setPreview(URL.createObjectURL(file));
     setResult("");
     setError("");
   };
@@ -179,8 +123,6 @@ export default function Home() {
     xhr.send(formData);
   };
 
-  const featureHighlights = result ? extractFeatureHighlights(result) : [];
-
   const handleDownloadText = () => {
     const text = result ? result : 'No analysis result available.';
     const blob = new Blob([text], { type: 'text/plain' });
@@ -214,9 +156,7 @@ export default function Home() {
     setStep('upload');
     setImage(null);
     setResult("");
-    setPreview(null);
-    setFileName(undefined);
-    setFileSize(undefined);
+    setFadeOut(false);
   };
 
   const formattedCards = splitResultCards(cleanAndFormatResult(result));
@@ -325,7 +265,7 @@ export default function Home() {
                 const region = cells[0];
                 const percent = parseInt(cells[1].replace(/[^\d]/g, ''), 10);
                 return region && !isNaN(percent) ? { region, percent } : null;
-              }).filter(Boolean);
+              }).filter((item): item is { region: string; percent: number } => item !== null);
               if (data.length) {
                 return <AncestryPieChart data={data} />;
               }

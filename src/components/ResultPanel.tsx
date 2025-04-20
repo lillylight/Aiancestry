@@ -14,7 +14,6 @@ interface ResultPanelProps {
   fileSize?: string;
   result: string;
   ancestryData: AncestryDatum[];
-  featureHighlights: string[];
   onDownloadPDF: () => void;
   onShare: (platform: "twitter" | "facebook") => void;
   onNewReading: () => void;
@@ -27,7 +26,6 @@ export default function ResultPanel({
   fileSize,
   result,
   ancestryData,
-  featureHighlights,
   onDownloadPDF,
   onShare,
   onNewReading,
@@ -73,12 +71,6 @@ export default function ResultPanel({
             {result && (
               <div className="bg-[#23252b] rounded-lg p-5 mt-4 text-left text-gray-100 border border-blue-900/40 shadow-lg">
                 <h2 className="result-card-heading">AI Ancestry Analysis</h2>
-                <ul className="list-disc text-center mb-3 text-sm text-blue-200 flex flex-col items-center">
-                  {featureHighlights.length === 0 && <li>No specific features highlighted.</li>}
-                  {featureHighlights.map((line, idx) => (
-                    <li key={idx} className="list-item">{line}</li>
-                  ))}
-                </ul>
                 <h2 className="result-card-heading mt-4 mb-1">Full Analysis</h2>
                 <pre className="whitespace-pre-wrap text-xs bg-[#18191a] p-2 rounded border border-gray-700 overflow-x-auto max-h-52 floating-result-text !text-[#23252b] !opacity-100 !text-shadow-none text-center">{result}</pre>
               </div>
@@ -105,16 +97,3 @@ export default function ResultPanel({
     </div>
   );
 }
-
-<style>
-  /* Center card headings */
-  .result-card-heading {
-    text-align: center;
-    width: 100%;
-    font-size: 1.37rem;
-    font-weight: 800;
-    color: #2f80ed;
-    margin-bottom: 0.7em;
-    letter-spacing: -0.01em;
-  }
-</style>

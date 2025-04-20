@@ -276,6 +276,16 @@ body {
   transition: all 0.2s;
 }
 
+.result-card-heading {
+  text-align: center;
+  width: 100%;
+  font-size: 1.37rem;
+  font-weight: 800;
+  color: #2f80ed;
+  margin-bottom: 0.7em;
+  letter-spacing: -0.01em;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

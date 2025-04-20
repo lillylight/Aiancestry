@@ -18,19 +18,29 @@ export interface AncestryDatum {
 
 export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
   // Defensive: extract region and percent from any object that looks like it has them
-  const sanitizedData = Array.isArray(data)
+  const sanitizedData = (Array.isArray(data)
     ? data
         .map((item) => {
           // Accept both string and number for percent, trim region
           let region = '';
           let percent = 0;
           if (typeof item === 'object' && item !== null) {
-            // Only try .label if item is not strictly AncestryDatum, but allow for generic objects
-            region = String((item as any).region || (item as any).label || '').trim();
-            percent = typeof (item as any).percent === 'number' ? (item as any).percent : parseInt((item as any).percent, 10);
-            // Try to parse from string like 'RegionName (Tribe): 23%' or 'RegionName: 23%'
+            // Type guard for region
+            if ('region' in item && typeof (item as {region?: unknown}).region === 'string') {
+              region = ((item as {region?: unknown}).region as string).trim();
+            } else if ('label' in item && typeof (item as {label?: unknown}).label === 'string') {
+              region = ((item as {label?: unknown}).label as string).trim();
+            }
+            // Type guard for percent
+            if ('percent' in item) {
+              if (typeof (item as {percent?: unknown}).percent === 'number') {
+                percent = (item as {percent?: unknown}).percent as number;
+              } else if (typeof (item as {percent?: unknown}).percent === 'string') {
+                percent = parseInt((item as {percent?: unknown}).percent as string, 10);
+              }
+            }
             if ((!region || isNaN(percent) || percent <= 0)) {
-              const text = String((item as any).region || (item as any).label || item.toString() || '');
+              const text = String((item as {region?: unknown, label?: unknown}).region || (item as {label?: unknown}).label || item.toString() || '');
               const match = text.match(/([A-Za-z\-\s]+)(?:\s*\([^)]*\))?[:\s]+(\d{1,3})%/);
               if (match) {
                 region = match[1].trim();
@@ -44,7 +54,7 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
           return null;
         })
         .filter((item) => item !== null)
-    : [];
+    : []) as AncestryDatum[];
 
   if (!sanitizedData || sanitizedData.length === 0) return null;
   const colors = [
