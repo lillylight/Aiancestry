@@ -1,0 +1,23 @@
+/* Carousel Dot Buttons */
+.carousel-dot-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e5e7eb;
+  border: 2px solid #bfc7d1;
+  margin: 0 6px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px #e5e7eb33;
+  display: inline-block;
+}
+.carousel-dot-btn.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  box-shadow: 0 2px 8px #2563eb33;
+}
+.carousel-dot-btn:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px #93c5fd;
+}

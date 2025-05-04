@@ -1,0 +1,11 @@
+.uploadAreaAnimated {
+  transition: box-shadow 0.4s cubic-bezier(0.4,0.2,0.2,1), transform 0.4s cubic-bezier(0.4,0.2,0.2,1), background 0.4s cubic-bezier(0.4,0.2,0.2,1), border-color 0.4s cubic-bezier(0.4,0.2,0.2,1);
+  border: 2.5px solid transparent;
+  background: transparent !important;
+}
+.uploadAreaAnimated:hover {
+  box-shadow: 0 18px 54px 0 rgba(47,128,237,0.13), 0 2px 18px 0 rgba(47,128,237,0.09);
+  background: transparent !important;
+  border-color: transparent;
+  transform: scale(1.045);
+}

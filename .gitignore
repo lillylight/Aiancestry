@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
+=======
+
+# large files and deleted directories
+/astro/
+*.eph
+>>>>>>> 4a0568c (Initial commit with clean history)

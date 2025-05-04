@@ -9,10 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.8.4",
     "chart.js": "^4.4.9",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.1",
+=======
+    "@coinbase/onchainkit": "^0.38.8",
+    "@coinbase/wallet-sdk": "^4.3.2",
+    "@tanstack/react-query": "^5.74.7",
+    "axios": "^1.8.4",
+    "chart.js": "^4.4.9",
+    "framer-motion": "^12.9.2",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+>>>>>>> 4a0568c (Initial commit with clean history)
     "marked": "^15.0.8",
     "next": "15.3.0",
     "react": "^19.0.0",
@@ -20,7 +32,14 @@
     "react-circular-progressbar": "^2.2.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
+<<<<<<< HEAD
     "react-icons": "^5.5.0"
+=======
+    "react-icons": "^5.5.0",
+    "siwe": "^3.0.0",
+    "viem": "^2.28.0",
+    "wagmi": "^2.15.0"
+>>>>>>> 4a0568c (Initial commit with clean history)
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -193,6 +193,34 @@ body {
   animation: fade-slide-out 0.38s cubic-bezier(.4,0,.2,1);
 }
 
+<<<<<<< HEAD
+=======
+.carousel-dot-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f5f6fa;
+  margin: 0 3px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.22s, box-shadow 0.22s, transform 0.18s;
+  display: inline-block;
+  box-shadow: 0 4px 16px 0 rgba(30,32,36,0.13), 0 1.5px 6px 0 rgba(30,32,36,0.10);
+  border: none;
+  opacity: 1;
+}
+
+.carousel-dot-btn.active {
+  background: #d1d5db;
+  box-shadow: 0 6px 20px 0 rgba(30,32,36,0.18), 0 2px 8px 0 rgba(30,32,36,0.13);
+}
+
+.carousel-dot-btn:focus {
+  outline: 2px solid #bdbdbd;
+  outline-offset: 2px;
+}
+
+>>>>>>> 4a0568c (Initial commit with clean history)
 /* Carousel fade animation */
 @keyframes fade-slide-in {
   from { opacity: 0; transform: translateY(32px) scale(0.98); }

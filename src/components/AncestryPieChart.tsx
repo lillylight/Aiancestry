@@ -80,6 +80,7 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
     ],
   };
   return (
+<<<<<<< HEAD
     <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", position: "relative" }}>
       <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
       {/* Color Key */}
@@ -120,6 +121,55 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
             </span>
           </div>
         ))}
+=======
+    <div className="ancestry-pie-chart-capture flex flex-col items-center justify-center mb-4">
+      <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", position: "relative", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ width: 320, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
+        </div>
+        {/* Color Key */}
+        <div
+          style={{
+            marginTop: 12,
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: 10,
+            padding: "8px 12px",
+            boxShadow: "0 2px 8px #0001",
+            fontSize: 12,
+            minWidth: 140,
+            width: 'fit-content',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: 2,
+          }}
+        >
+          {sanitizedData.map((item, i) => (
+            <div
+              key={item.region}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 0,
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 12,
+                  height: 12,
+                  borderRadius: 3,
+                  background: colors[i % colors.length],
+                }}
+              ></span>
+              <span style={{ color: "#23252b" }}>
+                {item.region} ({item.percent}%)
+              </span>
+            </div>
+          ))}
+        </div>
+>>>>>>> 4a0568c (Initial commit with clean history)
       </div>
     </div>
   );

@@ -1,8 +1,34 @@
 "use client";
+<<<<<<< HEAD
 import React, { useState } from "react";
 import UploadArea from "../components/UploadArea";
 import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
 import { FaFilePdf, FaTwitter, FaFacebook, FaShare } from "react-icons/fa";
+=======
+import React, { useState, useEffect } from "react";
+import UploadArea from "../components/UploadArea";
+// import PremiumUploadArea from "../components/PremiumUploadArea";
+import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
+import { FaFilePdf, FaTwitter, FaFacebook, FaShare } from "react-icons/fa";
+import { chartToImage } from "../utils/chartToImage";
+import {
+  useWalletContext,
+  Wallet,
+  ConnectWallet,
+  WalletDropdown,
+  WalletDropdownLink,
+  WalletDropdownDisconnect,
+  ConnectWalletText,
+} from '@coinbase/onchainkit/wallet';
+import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
+import { Checkout, CheckoutButton, CheckoutStatus } from '@coinbase/onchainkit/checkout';
+import { motion } from 'framer-motion';
+// Import useAccount from wagmi to properly detect wallet connection
+import { useAccount } from 'wagmi';
+import { FundButton } from '@coinbase/onchainkit/fund';
+
+const PRODUCT_ID = process.env.NEXT_PUBLIC_PRODUCT_ID || '';
+>>>>>>> 4a0568c (Initial commit with clean history)
 
 // Utility: Clean and format the result for better readability
 function cleanAndFormatResult(raw: string): string {
@@ -21,6 +47,12 @@ function cleanAndFormatResult(raw: string): string {
   cleaned = cleaned.replace(/(\d+\.\s)/g, '<br/><span class="text-blue-500 font-bold">$1</span>');
   // Replace - bullets with •
   cleaned = cleaned.replace(/\n- /g, '\n• ');
+<<<<<<< HEAD
+=======
+  // Remove standalone dash symbols that aren't part of words
+  cleaned = cleaned.replace(/([^\w-])-(\s|$)/g, '$1$2');
+  cleaned = cleaned.replace(/(^|\s)-([^\w-])/g, '$1$2');
+>>>>>>> 4a0568c (Initial commit with clean history)
   // Remove excessive line breaks
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
@@ -49,6 +81,16 @@ function splitResultCards(text: string): string[] {
 }
 
 export default function Home() {
+<<<<<<< HEAD
+=======
+  // Use wagmi's useAccount hook for reliable wallet connection detection
+  const { isConnected, address } = useAccount();
+  const [mounted, setMounted] = useState(false);
+  
+  // Keep the OnchainKit wallet context for other wallet features
+  const walletCtx = useWalletContext();
+  
+>>>>>>> 4a0568c (Initial commit with clean history)
   const [image, setImage] = useState<File | null>(null);
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -60,6 +102,28 @@ export default function Home() {
   const [fadeOut, setFadeOut] = useState(false);
   const [ancestryData, setAncestryData] = useState<AncestryDatum[]>([]);
 
+<<<<<<< HEAD
+=======
+  // Add mounted state to prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Sync step on wallet connect/disconnect
+  useEffect(() => {
+    setStep('upload');
+    if (!isConnected) {
+      setImage(null);
+      setResult("");
+      setError("");
+      setFadeOut(false);
+      setAncestryData([]);
+      setCarouselIndex(0);
+      setShowShareModal(false);
+    }
+  }, [isConnected]);
+
+>>>>>>> 4a0568c (Initial commit with clean history)
   const handleDrop = (files: File[]) => {
     const file = files[0];
     setImage(file);
@@ -69,8 +133,11 @@ export default function Home() {
 
   const handleReveal = () => {
     if (!image) return;
+<<<<<<< HEAD
     setStep('processing');
     triggerAnalysis(image);
+=======
+>>>>>>> 4a0568c (Initial commit with clean history)
   };
 
   const triggerAnalysis = (file: File) => {
@@ -120,6 +187,7 @@ export default function Home() {
     xhr.send(formData);
   };
 
+<<<<<<< HEAD
   const handleDownloadText = () => {
     const text = result ? result : 'No analysis result available.';
     const blob = new Blob([text], { type: 'text/plain' });
@@ -133,6 +201,23 @@ export default function Home() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 0);
+=======
+  // PDF download handler using premium PDF utility and pie chart image
+  const handleDownloadPDF = async () => {
+    // Try to get the pie chart image as PNG
+    let pieChartDataUrl: string | undefined = undefined;
+    const chartEl = document.querySelector(".ancestry-pie-chart-capture") as HTMLElement;
+    if (chartEl) {
+      try {
+        pieChartDataUrl = await chartToImage(chartEl);
+      } catch (e) {
+        // fallback: no chart image
+      }
+    }
+    import('../utils/pdfUtils').then(({ downloadAnalysisAsPDF }) => {
+      downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
+    });
+>>>>>>> 4a0568c (Initial commit with clean history)
   };
 
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {
@@ -189,22 +274,36 @@ export default function Home() {
 
   const carouselSlides = [
     <div key="reading1" className={`openai-card carousel-slide${fadeOut && carouselIndex === 0 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
+<<<<<<< HEAD
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Your Ancestry Reading</h2>
+=======
+      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Your Ancestry Reading</h2>
+>>>>>>> 4a0568c (Initial commit with clean history)
       <div className="floating-result-text w-full max-w-2xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-6 overflow-y-auto hide-scrollbar relative" style={{maxHeight:'420px', minHeight:'220px', boxShadow:'none'}} onScroll={e => handleCardScroll(e, 0)}>
         {/* Format the report with blank lines between bullets and paragraphs, and remove any summary table if present */}
         <div dangerouslySetInnerHTML={{__html: cleanAndFormatResult((formattedCards[0] || '').replace(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/, ''))}} />
       </div>
     </div>,
     <div key="reading2" className={`openai-card carousel-slide${fadeOut && carouselIndex === 1 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
+<<<<<<< HEAD
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">More Details</h2>
+=======
+      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>More Details</h2>
+>>>>>>> 4a0568c (Initial commit with clean history)
       <div className="floating-result-text w-full max-w-2xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-6 overflow-y-auto hide-scrollbar relative" style={{maxHeight:'420px', minHeight:'220px', boxShadow:'none'}} onScroll={e => handleCardScroll(e, 1)}>
         {/* Format the report with blank lines between bullets and paragraphs, and remove any summary table if present */}
         <div dangerouslySetInnerHTML={{__html: cleanAndFormatResult((formattedCards[1] || '').replace(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/, ''))}} />
       </div>
     </div>,
+<<<<<<< HEAD
     <div key="summary" className={`openai-card carousel-slide${fadeOut && carouselIndex === 2 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[420px] py-12 bg-transparent shadow-none`}>
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Summary Table</h2>
       <div className="floating-result-text w-full max-w-4xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-8 overflow-y-auto hide-scrollbar relative" style={{maxWidth:'950px',maxHeight:'520px', minHeight:'220px', boxShadow:'none'}}>
+=======
+    <div key="summary" className={`openai-card carousel-slide${fadeOut && carouselIndex === 2 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
+      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Summary Table</h2>
+      <div className="floating-result-text w-full max-w-4xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-8 overflow-y-auto hide-scrollbar relative" style={{maxWidth:'950px',maxHeight:'420px', minHeight:'220px', boxShadow:'none'}}>
+>>>>>>> 4a0568c (Initial commit with clean history)
         {(() => {
           const summaryTableMatch = result.match(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/);
           if (summaryTableMatch) {
@@ -246,9 +345,15 @@ export default function Home() {
         })()}
       </div>
     </div>,
+<<<<<<< HEAD
     <div key="piechart" className={`openai-card carousel-slide${fadeOut && carouselIndex === 3 ? ' fade-out' : ''} flex flex-col items-center justify-center min-h-[420px]`}>
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Ancestry Pie Chart</h2>
       <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
+=======
+    <div key="piechart" className={`openai-card carousel-slide${fadeOut && carouselIndex === 3 ? ' fade-out' : ''} flex flex-col items-center justify-center min-h-[500px]`}>
+      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Ancestry Pie Chart</h2>
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
+>>>>>>> 4a0568c (Initial commit with clean history)
         {/* Parse ancestry data from summary table in result, fallback to ancestryData */}
         {(() => {
           // Extract summary table from result (markdown table)
@@ -278,6 +383,7 @@ export default function Home() {
     </div>,
   ];
 
+<<<<<<< HEAD
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#f8f9fa] to-[#e5e7eb] py-12">
       <div className="w-full max-w-2xl mx-auto">
@@ -360,5 +466,376 @@ export default function Home() {
         </div>
       )}
     </div>
+=======
+  useEffect(() => {
+    // This effect should only run on the client side
+    if (typeof window === 'undefined') return;
+    let paymentSuccessDetected = false;
+
+    const logState = (msg) => {
+      console.log(`[PAYMENT DEBUG] ${msg}`, { image, step });
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data) {
+        if (
+          (event.data.type === 'checkout-status-change' && event.data.status === 'success') ||
+          event.data.event_type === 'charge:confirmed' ||
+          event.data.event_type === 'charge:resolved' ||
+          event.data.event_type === 'charge:completed'
+        ) {
+          if (paymentSuccessDetected) return;
+          paymentSuccessDetected = true;
+          logState('Payment detected via postMessage');
+          setTimeout(() => {
+            logState('Calling triggerAnalysis after payment (postMessage)');
+            if (image && step === 'upload') {
+              setStep('processing');
+              triggerAnalysis(image);
+            }
+          }, 3000);
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    const checkForPaymentSuccess = () => {
+      if (paymentSuccessDetected) return;
+      const successElements = document.querySelectorAll('.ock-text-success, .ock-success-message');
+      if (successElements.length > 0) {
+        paymentSuccessDetected = true;
+        logState('Payment detected via DOM class');
+        setTimeout(() => {
+          logState('Calling triggerAnalysis after payment (DOM class)');
+          if (image && step === 'upload') {
+            setStep('processing');
+            triggerAnalysis(image);
+          }
+        }, 3000);
+        return;
+      }
+      const allElements = document.querySelectorAll('*');
+      Array.from(allElements).forEach(element => {
+        if (
+          element.textContent?.includes('Payment successful') ||
+          element.textContent?.includes('Payment completed') ||
+          element.textContent?.includes('Transaction complete') ||
+          element.textContent?.includes('Payment confirmed') ||
+          element.textContent?.includes('View payment details')
+        ) {
+          paymentSuccessDetected = true;
+          logState('Payment detected via DOM text');
+          setTimeout(() => {
+            logState('Calling triggerAnalysis after payment (DOM text)');
+            if (image && step === 'upload') {
+              setStep('processing');
+              triggerAnalysis(image);
+            }
+          }, 3000);
+          return;
+        }
+      });
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      if (paymentSuccessDetected) return;
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              const element = node as HTMLElement;
+              const successElements = document.querySelectorAll('.ock-text-success, .ock-success-message');
+              if (successElements.length > 0) {
+                if (paymentSuccessDetected) return;
+                paymentSuccessDetected = true;
+                logState('Payment detected via MutationObserver class');
+                setTimeout(() => {
+                  logState('Calling triggerAnalysis after payment (MutationObserver class)');
+                  if (image && step === 'upload') {
+                    setStep('processing');
+                    triggerAnalysis(image);
+                  }
+                }, 3000);
+              }
+              if (
+                element.textContent?.includes('Payment successful') ||
+                element.textContent?.includes('Payment completed') ||
+                element.textContent?.includes('Transaction complete') ||
+                element.textContent?.includes('Payment confirmed') ||
+                element.textContent?.includes('View payment details')
+              ) {
+                if (paymentSuccessDetected) return;
+                paymentSuccessDetected = true;
+                logState('Payment detected via MutationObserver text');
+                setTimeout(() => {
+                  logState('Calling triggerAnalysis after payment (MutationObserver text)');
+                  if (image && step === 'upload') {
+                    setStep('processing');
+                    triggerAnalysis(image);
+                  }
+                }, 3000);
+              }
+            }
+          });
+        }
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const interval = setInterval(checkForPaymentSuccess, 1500);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, [image, step]);
+
+  return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#f8f9fa] to-[#e5e7eb] py-12 relative">
+        {/* Wallet connect button top right, round border, full dropdown */}
+        <div className="absolute top-6 right-8 z-50">
+          <Wallet>
+            <ConnectWallet
+              className={`ock-connect-glass px-4 py-2 rounded-full font-bold text-white text-base shadow-lg border border-gray-700 bg-gradient-to-br from-gray-800 to-gray-700/80 backdrop-blur-lg bg-opacity-70 hover:bg-gray-900/80 transition-all duration-200 focus:outline-none ${isConnected ? 'from-green-600 to-indigo-600 border-green-400/30' : 'from-indigo-600 to-green-600 border-indigo-500/30'}`}
+              disconnectedLabel="Connect Wallet"
+            >
+              {isConnected && (
+                <div className="mr-2 relative">
+                  <motion.div 
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="absolute w-2 h-2 bg-green-400 rounded-full right-0 top-0 opacity-70"
+                  ></motion.div>
+                  <div className="absolute w-2 h-2 bg-green-500 rounded-full right-0 top-0"></div>
+                </div>
+              )}
+              <Avatar className="h-6 w-6" />
+              <ConnectWalletText>
+                {isConnected ? '' : 'Connect Wallet'}
+              </ConnectWalletText>
+              <Name className="font-medium" />
+            </ConnectWallet>
+            <WalletDropdown>
+              <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+                <Avatar className="h-8 w-8" />
+                <Name className="font-bold ml-2" />
+                <Address className="text-gray-400 ml-2" />
+              </Identity>
+              <WalletDropdownLink
+                className="py-3 rounded-xl flex items-center bg-white/10 hover:bg-white/20 text-black font-medium pl-4 pr-2 my-1 transition-all duration-200 border border-gray-300 hover:translate-y-[-2px]"
+                icon="wallet"
+                href="https://keys.coinbase.com"
+              >
+                Wallet
+              </WalletDropdownLink>
+              <FundButton
+                className="w-full py-3 rounded-xl flex items-center justify-start bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 my-1 pl-4 pr-2"
+                text="Add Funds"
+                hideIcon={false}
+                openIn="tab"
+              />
+              <div className="pt-2 pb-2">
+                <WalletDropdownDisconnect className="w-full bg-white/10 hover:bg-red-900 transition-all duration-200 py-3 rounded-xl text-black font-medium border border-gray-300 hover:border-red-500 hover:translate-y-[-2px]" />
+              </div>
+            </WalletDropdown>
+          </Wallet>
+        </div>
+
+        {/* Wallet connection overlay - only shown when wallet is not connected AND component is mounted */}
+        {mounted && !isConnected && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center">
+            <div className="max-w-md mx-auto bg-[#23252b]/90 p-8 rounded-3xl shadow-2xl border border-indigo-500/30 text-center">
+              <div className="flex items-center justify-center mb-6">
+                <svg className="w-10 h-10 text-indigo-400 mr-3 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2m0-10v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4m0-5h7v2a3 3 0 01.105 2.967l-1.178 9a2 2 0 01-2 1.846V11a2 2 0 012-2h6a2 2 0 012 2v3" />
+                </svg>
+                <h2 className="text-2xl font-bold text-white">Connect Your Wallet</h2>
+              </div>
+              <p className="text-gray-300 mb-8">
+                Please connect your wallet using the button in the top right corner to access AI Ancestry and reveal your roots.
+              </p>
+              {/* <div className="animate-bounce bg-indigo-600 p-2 w-10 h-10 ring-1 ring-indigo-400/50 shadow-lg rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                </svg>
+              </div> */}
+              {/* <div className="flex justify-center">
+                <div className="animate-bounce bg-indigo-600 p-2 w-10 h-10 ring-1 ring-indigo-400/50 shadow-lg rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
+              </div> */}
+            </div>
+          </div>
+        )}
+
+        {/* Only show content when mounted and wallet is connected */}
+        {mounted && (
+          <>
+            {/* Only show upload/pay card if step is 'upload' and wallet is connected */}
+            {isConnected && step === 'upload' && (
+              <div className="w-full max-w-2xl mx-auto flex justify-center">
+                <div className="openai-card flex flex-col items-center animate-fade-in text-center w-full max-w-lg mx-auto p-4 md:p-6 bg-[#23252b]/80 rounded-[2.5rem]">
+                  <div className="flex flex-col items-center w-full justify-center">
+                    <div
+                      className="relative w-full flex justify-center items-center"
+                      style={{ minHeight: '320px' }}
+                    >
+                      {/* Frosted glass dark blur overlay when image is uploaded */}
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '320px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          filter: image ? 'blur(3px) grayscale(0.7) opacity(0.7)' : 'none',
+                          pointerEvents: image ? 'auto' : 'auto',
+                          transition: 'filter 0.4s, opacity 0.4s',
+                          position: 'relative',
+                        }}
+                        onClick={e => {
+                          // Only reset if user clicks the overlay, NOT the pay button
+                          if (image && !loading) {
+                            // If the click is inside the pay button, do nothing
+                            const payBtn = document.getElementById('pay-btn');
+                            if (payBtn && payBtn.contains(e.target as Node)) return;
+                            setImage(null);
+                            setResult("");
+                            setError("");
+                          }
+                        }}
+                        title={image && !loading ? 'Click anywhere except the Pay button to upload a new image' : undefined}
+                      >
+                        {image && !loading && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              zIndex: 2,
+                              background: 'rgba(34, 36, 40, 0.42)',
+                              backdropFilter: 'blur(7px) saturate(1.2)',
+                              WebkitBackdropFilter: 'blur(7px) saturate(1.2)',
+                              borderRadius: '2.5rem',
+                              pointerEvents: 'auto',
+                            }}
+                          />
+                        )}
+                        <UploadArea onDrop={handleDrop} isUploading={loading} hasFile={!!image} />
+                      </div>
+                      {/* Payment button overlays UploadArea as before */}
+                      {image && !loading && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            pointerEvents: 'none', // let overlay handle pointer events except for button
+                            zIndex: 3,
+                          }}
+                        >
+                          <div style={{ pointerEvents: 'auto', zIndex: 4 }}>
+                            <Checkout productId={PRODUCT_ID}>
+                              <div className="flex flex-col items-center w-full">
+                                <div style={{ display: step === 'upload' ? 'block' : 'none' }}>
+                                  <CheckoutButton
+                                    id="pay-btn"
+                                    coinbaseBranded
+                                    className="openai-btn openai-btn-green px-4 py-2 text-base mx-auto mt-7 w-40"
+                                    onSuccess={() => {
+                                      setStep('processing');
+                                      triggerAnalysis(image);
+                                    }}
+                                  >
+                                    Reveal My Roots
+                                  </CheckoutButton>
+                                </div>
+                                <div className="flex justify-center w-full mt-2">
+                                  <CheckoutStatus />
+                                </div>
+                              </div>
+                            </Checkout>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {loading && (
+                      <div className="flex flex-col items-center justify-center w-full mt-8 mb-8">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-400 mb-6"></div>
+                        <span className="text-3xl font-bold text-blue-500 mb-2" style={{ letterSpacing: '-0.5px' }}>Uploading & Analyzing...</span>
+                        <span className="text-lg text-gray-300">Please wait while we process your photo and generate your ancestry reading.</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {step === 'processing' && (
+              <div className="openai-card flex flex-col items-center justify-center min-h-[420px] animate-fade-in text-center">
+                {/* Move h2 slightly higher */}
+                <h2 className="text-2xl font-bold text-blue-500 mb-6 mt-2" style={{position:'relative', top: '-0.75rem'}}>Analyzing Image...</h2>
+                <div className="w-full max-w-md px-4 mb-4 mt-2">
+                  <div className="h-6 w-6 md:h-16 md:w-16 bg-blue-500 rounded-full transition-all duration-300 ease-out flex items-center justify-center mx-auto" style={{ width: 96, height: 96, minWidth: 48, minHeight: 48 }}>
+                    <span className="text-white text-sm font-semibold">{progress}%</span>
+                  </div>
+                </div>
+                <p className="text-gray-400 text-base mt-2">Please wait while we analyze your image for ancestry features.</p>
+              </div>
+            )}
+            {/* Always render result panel, only show content if step is 'result' */}
+            {step === 'result' && (
+              <div className="relative">
+                {/* Remove the 'Your Ancestry Reading' heading above the carousel */}
+                {carouselSlides[carouselIndex]}
+                {/* Carousel dots */}
+                <div className="flex justify-center gap-2 mt-3">
+                  {carouselSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      className={`carousel-dot-btn${carouselIndex === idx ? ' active' : ''}`}
+                      onClick={() => setCarouselIndex(idx)}
+                      aria-label={`Show Card ${idx+1}`}
+                      type="button"
+                    ></button>
+                  ))}
+                </div>
+                {/* Download/Share/New Reading buttons at the bottom, OpenAI.fm style */}
+                <div className="flex flex-wrap gap-6 justify-center items-center mt-8">
+                  <button className="openai-btn openai-btn-light flex items-center gap-1 px-2 py-1 text-sm" onClick={handleDownloadPDF}>
+                    <FaFilePdf className="text-sm" /> DOWNLOAD
+                  </button>
+                  <button className="openai-btn openai-btn-dark flex items-center gap-1 px-2 py-1 text-sm" onClick={()=>setShowShareModal(true)}>
+                    <FaShare className="text-sm" /> SHARE
+                  </button>
+                  <button className="openai-btn openai-btn-light flex items-center gap-1 px-2 py-1 text-sm" onClick={handleNewReading}>
+                    NEW READING
+                  </button>
+                </div>
+              </div>
+            )}
+            {showShareModal && (
+              <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+                <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-6">
+                  <h3 className="font-bold text-lg mb-2">Share your result</h3>
+                  <div className="flex gap-4">
+                    <button className="openai-btn openai-btn-dark flex items-center gap-2" onClick={()=>handleShare('twitter')}><FaTwitter /> Twitter</button>
+                    <button className="openai-btn openai-btn-dark flex items-center gap-2" onClick={()=>handleShare('facebook')}><FaFacebook /> Facebook</button>
+                    <button className="openai-btn openai-btn-light flex items-center gap-2" onClick={()=>handleShare('copy')}>Copy Link</button>
+                  </div>
+                  <button className="text-blue-400 mt-3 underline" onClick={()=>setShowShareModal(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+>>>>>>> 4a0568c (Initial commit with clean history)
   );
 }
