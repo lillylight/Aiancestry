@@ -1,0 +1,44 @@
+.premium-upload-area {
+  background: linear-gradient(135deg, #f8fafc 60%, #e0e7ef 100%);
+  border: 2.5px dashed #2f80ed;
+  border-radius: 32px;
+  box-shadow: 0 10px 40px 0 rgba(47,128,237,0.07), 0 1.5px 3px 0 rgba(47,128,237,0.11);
+  transition: box-shadow 0.3s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.premium-upload-area .animate-premium-pop {
+  animation: premium-pop 0.8s cubic-bezier(.4,0,.2,1);
+}
+@keyframes premium-pop {
+  0% { transform: scale(0.92); opacity: 0; }
+  80% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-premium-orb {
+  animation: orb-float 3.2s infinite alternate;
+}
+@keyframes orb-float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-16px); }
+}
+.animate-premium-drag {
+  animation: drag-fade 0.5s cubic-bezier(.4,0,.2,1);
+}
+@keyframes drag-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-gradient-text {
+  background: linear-gradient(90deg, #2f80ed, #6d47d6, #1ee3cf);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  animation: gradient-move 2.5s infinite alternate;
+}
+@keyframes gradient-move {
+  0% { background-position: 0 50%; }
+  100% { background-position: 100% 50%; }
+}
