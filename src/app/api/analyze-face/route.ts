@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
+// Use Node.js runtime instead of edge for better compatibility with Vercel
+export const runtime = "nodejs";
+export const maxDuration = 60; // Set maximum duration to 60 seconds
 
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
@@ -70,11 +72,25 @@ export async function POST(req: NextRequest) {
   try {
     // Model selection for OpenAI API
     const model = "gpt-4.1";
-    const apiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    
+    // Ensure OpenAI API key is available
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error('OpenAI API key is missing');
+      return NextResponse.json({ error: "API key configuration error" }, { status: 500 });
+    }
+    
+    // Create a timeout promise to handle API timeouts
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('OpenAI API request timeout')), 50000)
+    );
+    
+    // Make the API request with improved error handling
+    const fetchPromise = fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: model,
@@ -97,13 +113,31 @@ export async function POST(req: NextRequest) {
         max_tokens: 1024
       }),
     });
+    
+    // Race between the API call and the timeout
+    const apiRes = await Promise.race([fetchPromise, timeoutPromise]) as Response;
     if (!apiRes.ok) {
-      errorText = await apiRes.text();
+      try {
+        errorText = await apiRes.text();
+        console.error('OpenAI API error:', errorText);
+      } catch (e) {
+        errorText = 'Failed to get error details from OpenAI API';
+        console.error(errorText);
+      }
       return NextResponse.json({ error: errorText }, { status: 500 });
     }
-    const data = await apiRes.json();
+    
+    let data;
+    try {
+      data = await apiRes.json();
+    } catch (e) {
+      console.error('Failed to parse OpenAI API response:', e);
+      return NextResponse.json({ error: 'Failed to parse API response' }, { status: 500 });
+    }
+    
     result = data.choices?.[0]?.message?.content || "No analysis found.";
     if (!result || result === "No analysis found.") {
+      console.error('No analysis found in OpenAI response:', data);
       return NextResponse.json({ error: errorText || "No analysis found from OpenAI API." }, { status: 500 });
     }
 
