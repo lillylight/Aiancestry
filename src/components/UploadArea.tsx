@@ -36,12 +36,18 @@ const UploadArea: React.FC<UploadAreaProps> = ({ onDrop, isUploading, hasFile, i
       {hasFile && !isUploading ? (
         imageUrl ? (
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%'}}>
-            <img
-              src={imageUrl}
-              alt="Uploaded preview"
-              className="rounded-[2.5rem] shadow-xl animate-fade-in"
-              style={{ width: '700px', height: '325px', objectFit: 'cover', border: '2.5px solid #e5e7eb', transition: 'all 0.25s cubic-bezier(.4,2,.6,1)' }}
-            />
+            <div style={{ position: 'relative', width: '100%', height: '325px', borderRadius: '2.5rem', overflow: 'hidden', border: '2.5px solid #e5e7eb', transition: 'all 0.25s cubic-bezier(.4,2,.6,1)' }}>
+              <img
+                src={imageUrl}
+                alt="Uploaded preview"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }}
+              />
+              {/* Overlay content goes here (e.g. Pay button) */}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2 }}>
+                {/* Place overlay/modal content here if needed */}
+                {/** Example: <PayButton /> or children */}
+              </div>
+            </div>
           </div>
         ) : null
       ) : (

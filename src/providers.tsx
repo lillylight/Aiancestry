@@ -29,6 +29,7 @@ export function Providers(props: { children: ReactNode }) {
             appearance: {
               name: "AI Ancestry",
               theme: "dark",
+              logo: "/onchainkit-logo.png",
             },
           }}
         >
