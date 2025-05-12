@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 
-const disclaimerText = `By using this app, you consent to our terms. This is an experimental, creative project and should not replace actual DNA analysis. The ancestry results are for fun and may be inaccurate—do not use them for any real-world, medical, legal, or governmental purposes.`;
+const disclaimerText = `By using this app, you consent to our terms. This is an experimental and creative project and should not replace actual DNA analysis. The ancestry results are for fun and may be inaccurate. Do not use them for any real-world, medical, legal, or governmental purposes.`;
 
 const howToUseText = [
   "Upload a clear photo of your face.",
-  "Wait for the AI to analyze your features.",
+  "Get Your Features Analyzed.",
   "View your experimental ancestry breakdown",
   "Download your results as a PDF (Alpha)."
 ];

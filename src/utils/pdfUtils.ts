@@ -235,6 +235,98 @@ function renderAncestryBreakdownBlocks(doc: jsPDF, ancestryBlocks: { region: str
   return y;
 }
 
+// Import additional modules if needed
+
+// Helper function to create a basic pie chart directly in the PDF
+function createBasicPieChart(
+  doc: jsPDF, 
+  data: AncestryDatum[], 
+  pageWidth: number, 
+  y: number, 
+  width: number, 
+  height: number
+) {
+  try {
+    if (!data || data.length === 0) {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(18);
+      doc.setTextColor('#888');
+      doc.text('Pie chart unavailable', pageWidth / 2, y + height/2, { align: 'center' });
+      return;
+    }
+    
+    // Set basic parameters
+    const centerX = pageWidth / 2;
+    const centerY = y + height / 2;
+    const radius = Math.min(width, height) / 2.5;
+    
+    // Draw title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor('#23252b');
+    doc.text('Ancestry Breakdown', centerX, y + 20, { align: 'center' });
+    
+    // Calculate total for percentages
+    const total = data.reduce((sum, item) => sum + item.percent, 0);
+    
+    // Draw pie chart
+    let startAngle = 0;
+    const colors = ['#2f80ed','#f2994a','#27ae60','#eb5757','#9b51e0','#56ccf2','#f2c94c','#6fcf97','#bb6bd9'];
+    
+    data.forEach((item, i) => {
+      const sliceAngle = (Math.PI * 2 * item.percent) / total;
+      const endAngle = startAngle + sliceAngle;
+      const color = colors[i % colors.length];
+      
+      // Draw pie slice
+      doc.setFillColor(color);
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(1);
+      
+      // Draw the slice using a different approach since jsPDF doesn't have direct arc support
+      // We'll use multiple line segments to approximate an arc
+      const segments = 16; // Number of line segments to use for the arc
+      
+      // Start from the center
+      doc.setDrawColor(color); // Set same fill and draw color
+      doc.setFillColor(color);
+      
+      // Create a path
+      const pathData = [];
+      
+      // Start at center
+      pathData.push({op: 'm', c: [centerX, centerY]});
+      
+      // Draw line to start of arc
+      const startX = centerX + Math.cos(startAngle) * radius;
+      const startY = centerY + Math.sin(startAngle) * radius;
+      pathData.push({op: 'l', c: [startX, startY]});
+      
+      // Add the arc segments
+      for (let j = 0; j <= segments; j++) {
+        const segAngle = startAngle + (j / segments) * (endAngle - startAngle);
+        const segX = centerX + Math.cos(segAngle) * radius;
+        const segY = centerY + Math.sin(segAngle) * radius;
+        pathData.push({op: 'l', c: [segX, segY]});
+      }
+      
+      // Close path back to center
+      pathData.push({op: 'l', c: [centerX, centerY]});
+      
+      // Draw the path
+      doc.path(pathData, 'F');
+      
+      startAngle = endAngle;
+    });
+  } catch (error) {
+    console.error('Error creating basic pie chart:', error);
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(18);
+    doc.setTextColor('#888');
+    doc.text('Pie chart unavailable', pageWidth / 2, y + height/2, { align: 'center' });
+  }
+}
+
 export function downloadAnalysisAsPDF(
   result: string,
   ancestryData: AncestryDatum[],
@@ -390,10 +482,48 @@ export function downloadAnalysisAsPDF(
     // Use the image-based pie chart approach which was working correctly
     if (pieChartDataUrl) {
       try {
+        console.log('PDF: Rendering pie chart with data URL of length:', pieChartDataUrl.length);
+        
+        // Validate the data URL format
+        if (!pieChartDataUrl.startsWith('data:image/png;base64,')) {
+          throw new Error('Invalid pie chart data URL format');
+        }
+        
+        // Make sure to wait before adding image to ensure PDF is ready
         const chartWidth = 320;
         const chartHeight = 220;
         const chartX = (pageWidth - chartWidth) / 2;
-        doc.addImage(pieChartDataUrl, 'PNG', chartX, 120, chartWidth, chartHeight, undefined, 'FAST');
+        
+        // Wait to ensure PDF is ready for image
+        setTimeout(() => {}, 0);
+        
+        // Use a more reliable approach to add image
+        try {
+          // First try with regular method
+          doc.addImage(
+            pieChartDataUrl, 
+            'PNG', 
+            chartX, 120, 
+            chartWidth, chartHeight, 
+            undefined, 
+            'FAST'
+          );
+        } catch (imageError) {
+          console.error('First image add attempt failed, trying alternate approach:', imageError);
+          
+          // Second backup approach - split base64 to avoid length issues
+          const base64Data = pieChartDataUrl.split('base64,')[1];
+          doc.addImage(
+            base64Data, 
+            'PNG', 
+            chartX, 120, 
+            chartWidth, chartHeight, 
+            undefined, 
+            'FAST'
+          );
+        }
+        
+        // Add legend
         let legendY = 360;
         const legendBlockWidth = 340;
         const legendX = (pageWidth - legendBlockWidth) / 2 + 24;
@@ -408,19 +538,17 @@ export function downloadAnalysisAsPDF(
           doc.text(`${label}(${item.percent}%)`, legendX + 15, legendY + 5);
           legendY += 28;
         });
+        
+        console.log('PDF: Pie chart rendered successfully');
       } catch (e) {
         console.error('Error rendering pie chart in PDF:', e);
-        // Fallback if chart rendering fails
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(18);
-        doc.setTextColor('#888');
-        doc.text('Pie chart unavailable', pageWidth / 2, 220, { align: 'center' });
+        // Fallback if chart rendering fails - create a basic pie chart directly in the PDF
+        createBasicPieChart(doc, ancestryData, pageWidth, 120, 320, 220);
       }
     } else {
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(18);
-      doc.setTextColor('#888');
-      doc.text('Pie chart unavailable', pageWidth / 2, 220, { align: 'center' });
+      console.warn('PDF: No pie chart data URL provided, generating basic chart');
+      // Create a basic pie chart directly in the PDF if we don't have an image
+      createBasicPieChart(doc, ancestryData, pageWidth, 120, 320, 220);
     }
     
     // Add text breakdown

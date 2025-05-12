@@ -76,29 +76,27 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
     ],
   };
   return (
-    <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", position: "relative" }}>
+    <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
       <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
       <div
         style={{
-          position: "absolute",
-          bottom: 16,
-          left: 16,
           background: "rgba(255,255,255,0.95)",
           borderRadius: 10,
-          padding: "8px 12px",
+          padding: "12px 18px",
           boxShadow: "0 2px 8px #0001",
-          fontSize: 12,
-          minWidth: 140,
+          fontSize: 14,
+          minWidth: 180,
+          marginTop: 10,
         }}
       >
         {sanitizedData.map((item, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
+          <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
             <span style={{
               display: "inline-block",
-              width: 14,
-              height: 14,
+              width: 16,
+              height: 16,
               borderRadius: 4,
-              marginRight: 8,
+              marginRight: 10,
               background: colors[i % colors.length],
             }} />
             <span>{item.region}: {item.percent}%</span>
