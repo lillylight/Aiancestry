@@ -23,6 +23,7 @@ export function Providers(props: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
           apiKey={apiKey}
+          projectId={process.env.NEXT_PUBLIC_CDP_PROJECT_ID}
           chain={base}
           config={{
             appearance: {

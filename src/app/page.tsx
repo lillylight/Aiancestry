@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import UploadArea from "../components/UploadArea";
 // import PremiumUploadArea from "../components/PremiumUploadArea";
 import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
-import { FaFilePdf, FaTwitter, FaFacebook, FaShare } from "react-icons/fa";
+import { FaFilePdf, FaTwitter, FaFacebook, FaShare, FaPlus } from "react-icons/fa";
 import { chartToImage } from "../utils/chartToImage";
 import {
   useWalletContext,
@@ -19,7 +19,7 @@ import { Checkout, CheckoutButton, CheckoutStatus } from '@coinbase/onchainkit/c
 import { motion } from 'framer-motion';
 // Import useAccount from wagmi to properly detect wallet connection
 import { useAccount } from 'wagmi';
-import { FundButton } from '@coinbase/onchainkit/fund';
+import { FundButton, getOnrampBuyUrl } from '@coinbase/onchainkit/fund';
 
 const PRODUCT_ID = process.env.NEXT_PUBLIC_PRODUCT_ID || '';
 
@@ -501,20 +501,37 @@ export default function Home() {
                 <Address className="text-gray-400 ml-2" />
               </Identity>
               <WalletDropdownLink
-                className="py-3 rounded-xl flex items-center bg-white/10 hover:bg-white/20 text-black font-medium pl-4 pr-2 my-1 transition-all duration-200 border border-gray-300 hover:translate-y-[-2px]"
+                className="py-3 rounded-xl flex items-center bg-white/10 hover:bg-white/20 text-black font-medium pl-4 pr-2 my-1 transition-all duration-200 hover:shadow-lg hover:translate-y-[-2px]"
                 icon="wallet"
                 href="https://keys.coinbase.com"
               >
                 Wallet
               </WalletDropdownLink>
-              <FundButton
-                className="w-full py-3 rounded-xl flex items-center justify-start bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all duration-200 my-1 pl-4 pr-2"
-                text="Add Funds"
-                hideIcon={false}
-                openIn="tab"
-              />
+              {(() => {
+  const projectId = process.env.NEXT_PUBLIC_CDP_PROJECT_ID || '';
+  const { address } = useAccount();
+  if (!address) return null; // Only show FundButton if address is present
+  const onrampBuyUrl = getOnrampBuyUrl({
+    projectId,
+    addresses: { [address]: ['base'] },
+    assets: ['USDC'],
+    presetFiatAmount: 20,
+    fiatCurrency: 'USD',
+    // Optionally, set redirectUrl: window.location.origin
+  });
+  return (
+    <button
+      type="button"
+      className="w-full py-3 rounded-xl flex items-center justify-start bg-white/10 hover:bg-white/20 text-black font-medium transition-all duration-200 my-1 pl-4 pr-2 hover:shadow-lg hover:translate-y-[-2px]"
+      onClick={() => window.open(onrampBuyUrl, '_blank', 'noopener,noreferrer')}
+    >
+      <FaPlus className="mr-3 text-xl" />
+      <span>Funds</span>
+    </button>
+  );
+})()}
               <div className="pt-2 pb-2">
-                <WalletDropdownDisconnect className="w-full bg-white/10 hover:bg-red-900 transition-all duration-200 py-3 rounded-xl text-black font-medium border border-gray-300 hover:border-red-500 hover:translate-y-[-2px]" />
+                <WalletDropdownDisconnect className="w-full bg-white/10 hover:bg-white/20 text-black font-medium py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:translate-y-[-2px]" />
               </div>
             </WalletDropdown>
           </Wallet>
