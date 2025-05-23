@@ -193,8 +193,6 @@ body {
   animation: fade-slide-out 0.38s cubic-bezier(.4,0,.2,1);
 }
 
-<<<<<<< HEAD
-=======
 .carousel-dot-btn {
   width: 12px;
   height: 12px;
@@ -220,7 +218,6 @@ body {
   outline-offset: 2px;
 }
 
->>>>>>> 4a0568c (Initial commit with clean history)
 /* Carousel fade animation */
 @keyframes fade-slide-in {
   from { opacity: 0; transform: translateY(32px) scale(0.98); }

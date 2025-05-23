@@ -1,10 +1,4 @@
 "use client";
-<<<<<<< HEAD
-import React, { useState } from "react";
-import UploadArea from "../components/UploadArea";
-import AncestryPieChart, { AncestryDatum } from "../components/AncestryPieChart";
-import { FaFilePdf, FaTwitter, FaFacebook, FaShare } from "react-icons/fa";
-=======
 import React, { useState, useEffect } from "react";
 import UploadArea from "../components/UploadArea";
 // import PremiumUploadArea from "../components/PremiumUploadArea";
@@ -28,7 +22,6 @@ import { useAccount } from 'wagmi';
 import { FundButton } from '@coinbase/onchainkit/fund';
 
 const PRODUCT_ID = process.env.NEXT_PUBLIC_PRODUCT_ID || '';
->>>>>>> 4a0568c (Initial commit with clean history)
 
 // Utility: Clean and format the result for better readability
 function cleanAndFormatResult(raw: string): string {
@@ -47,12 +40,9 @@ function cleanAndFormatResult(raw: string): string {
   cleaned = cleaned.replace(/(\d+\.\s)/g, '<br/><span class="text-blue-500 font-bold">$1</span>');
   // Replace - bullets with •
   cleaned = cleaned.replace(/\n- /g, '\n• ');
-<<<<<<< HEAD
-=======
   // Remove standalone dash symbols that aren't part of words
   cleaned = cleaned.replace(/([^\w-])-(\s|$)/g, '$1$2');
   cleaned = cleaned.replace(/(^|\s)-([^\w-])/g, '$1$2');
->>>>>>> 4a0568c (Initial commit with clean history)
   // Remove excessive line breaks
   cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
 
@@ -81,8 +71,6 @@ function splitResultCards(text: string): string[] {
 }
 
 export default function Home() {
-<<<<<<< HEAD
-=======
   // Use wagmi's useAccount hook for reliable wallet connection detection
   const { isConnected, address } = useAccount();
   const [mounted, setMounted] = useState(false);
@@ -90,7 +78,6 @@ export default function Home() {
   // Keep the OnchainKit wallet context for other wallet features
   const walletCtx = useWalletContext();
   
->>>>>>> 4a0568c (Initial commit with clean history)
   const [image, setImage] = useState<File | null>(null);
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -102,8 +89,6 @@ export default function Home() {
   const [fadeOut, setFadeOut] = useState(false);
   const [ancestryData, setAncestryData] = useState<AncestryDatum[]>([]);
 
-<<<<<<< HEAD
-=======
   // Add mounted state to prevent hydration issues
   useEffect(() => {
     setMounted(true);
@@ -111,8 +96,8 @@ export default function Home() {
 
   // Sync step on wallet connect/disconnect
   useEffect(() => {
-    setStep('upload');
     if (!isConnected) {
+      setStep('upload');
       setImage(null);
       setResult("");
       setError("");
@@ -123,7 +108,6 @@ export default function Home() {
     }
   }, [isConnected]);
 
->>>>>>> 4a0568c (Initial commit with clean history)
   const handleDrop = (files: File[]) => {
     const file = files[0];
     setImage(file);
@@ -133,11 +117,8 @@ export default function Home() {
 
   const handleReveal = () => {
     if (!image) return;
-<<<<<<< HEAD
     setStep('processing');
     triggerAnalysis(image);
-=======
->>>>>>> 4a0568c (Initial commit with clean history)
   };
 
   const triggerAnalysis = (file: File) => {
@@ -187,21 +168,6 @@ export default function Home() {
     xhr.send(formData);
   };
 
-<<<<<<< HEAD
-  const handleDownloadText = () => {
-    const text = result ? result : 'No analysis result available.';
-    const blob = new Blob([text], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ancestry-analysis.txt';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 0);
-=======
   // PDF download handler using premium PDF utility and pie chart image
   const handleDownloadPDF = async () => {
     // Try to get the pie chart image as PNG
@@ -217,7 +183,6 @@ export default function Home() {
     import('../utils/pdfUtils').then(({ downloadAnalysisAsPDF }) => {
       downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
     });
->>>>>>> 4a0568c (Initial commit with clean history)
   };
 
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {
@@ -274,36 +239,22 @@ export default function Home() {
 
   const carouselSlides = [
     <div key="reading1" className={`openai-card carousel-slide${fadeOut && carouselIndex === 0 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
-<<<<<<< HEAD
-      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Your Ancestry Reading</h2>
-=======
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Your Ancestry Reading</h2>
->>>>>>> 4a0568c (Initial commit with clean history)
       <div className="floating-result-text w-full max-w-2xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-6 overflow-y-auto hide-scrollbar relative" style={{maxHeight:'420px', minHeight:'220px', boxShadow:'none'}} onScroll={e => handleCardScroll(e, 0)}>
         {/* Format the report with blank lines between bullets and paragraphs, and remove any summary table if present */}
         <div dangerouslySetInnerHTML={{__html: cleanAndFormatResult((formattedCards[0] || '').replace(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/, ''))}} />
       </div>
     </div>,
     <div key="reading2" className={`openai-card carousel-slide${fadeOut && carouselIndex === 1 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
-<<<<<<< HEAD
-      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">More Details</h2>
-=======
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>More Details</h2>
->>>>>>> 4a0568c (Initial commit with clean history)
       <div className="floating-result-text w-full max-w-2xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-6 overflow-y-auto hide-scrollbar relative" style={{maxHeight:'420px', minHeight:'220px', boxShadow:'none'}} onScroll={e => handleCardScroll(e, 1)}>
         {/* Format the report with blank lines between bullets and paragraphs, and remove any summary table if present */}
         <div dangerouslySetInnerHTML={{__html: cleanAndFormatResult((formattedCards[1] || '').replace(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/, ''))}} />
       </div>
     </div>,
-<<<<<<< HEAD
-    <div key="summary" className={`openai-card carousel-slide${fadeOut && carouselIndex === 2 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[420px] py-12 bg-transparent shadow-none`}>
-      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Summary Table</h2>
-      <div className="floating-result-text w-full max-w-4xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-8 overflow-y-auto hide-scrollbar relative" style={{maxWidth:'950px',maxHeight:'520px', minHeight:'220px', boxShadow:'none'}}>
-=======
     <div key="summary" className={`openai-card carousel-slide${fadeOut && carouselIndex === 2 ? ' fade-out' : ''} flex flex-col items-center justify-start min-h-[500px] py-12 bg-transparent shadow-none`}>
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Summary Table</h2>
       <div className="floating-result-text w-full max-w-4xl mx-auto text-base text-gray-800 font-mono bg-white/10 border-none shadow-none p-8 overflow-y-auto hide-scrollbar relative" style={{maxWidth:'950px',maxHeight:'420px', minHeight:'220px', boxShadow:'none'}}>
->>>>>>> 4a0568c (Initial commit with clean history)
         {(() => {
           const summaryTableMatch = result.match(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/);
           if (summaryTableMatch) {
@@ -345,15 +296,9 @@ export default function Home() {
         })()}
       </div>
     </div>,
-<<<<<<< HEAD
-    <div key="piechart" className={`openai-card carousel-slide${fadeOut && carouselIndex === 3 ? ' fade-out' : ''} flex flex-col items-center justify-center min-h-[420px]`}>
-      <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center">Ancestry Pie Chart</h2>
-      <div className="w-full max-w-2xl mx-auto flex flex-col items-center">
-=======
     <div key="piechart" className={`openai-card carousel-slide${fadeOut && carouselIndex === 3 ? ' fade-out' : ''} flex flex-col items-center justify-center min-h-[500px]`}>
       <h2 className="text-xl font-bold text-blue-400 mb-3 w-full text-center" style={{position:'relative', top: '-0.75rem'}}>Ancestry Pie Chart</h2>
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
->>>>>>> 4a0568c (Initial commit with clean history)
         {/* Parse ancestry data from summary table in result, fallback to ancestryData */}
         {(() => {
           // Extract summary table from result (markdown table)
@@ -383,90 +328,6 @@ export default function Home() {
     </div>,
   ];
 
-<<<<<<< HEAD
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#f8f9fa] to-[#e5e7eb] py-12">
-      <div className="w-full max-w-2xl mx-auto">
-        {step === 'upload' && (
-          <div className="openai-card flex flex-col items-center animate-fade-in text-center max-w-md mx-auto p-4 md:p-6">
-            <div className="flex flex-col items-center w-full">
-              <h1 className="text-3xl font-extrabold text-gray-800 mb-2 w-full text-center font-['Inter',sans-serif] tracking-tight" style={{fontFamily:'Inter,Segoe UI,sans-serif', letterSpacing:'-0.03em'}}>AI Ancestry</h1>
-              <p className="text-gray-500 mb-5 text-base w-full max-w-xs mx-auto text-center">Upload a clear photo of your face to get a creative, experimental ancestry breakdown.</p>
-            </div>
-            <div className="flex flex-col items-center w-full">
-              <div className="flex justify-center w-full mb-8">
-                <div className="relative w-full max-w-md">
-                  <UploadArea onDrop={handleDrop} isUploading={loading} hasFile={!!image} />
-                  {image && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#23252b]/80 border-2 border-blue-400 rounded-2xl z-10 animate-fade-in">
-                      <span className="text-blue-400 font-bold text-base mb-1">File Ready!</span>
-                      <span className="text-white text-xs break-all max-w-[80%] text-center">{image.name}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <button
-                className="openai-btn openai-btn-green px-8 py-3 text-lg mx-auto"
-                style={{ minWidth: 180 }}
-                onClick={() => image && handleReveal()}
-                disabled={!image || loading}
-              >
-                {loading ? 'Uploading...' : 'REVEAL MY ROOTS!'}
-              </button>
-              {error && <div className="text-red-500 mt-4 w-full text-center">{error}</div>}
-            </div>
-          </div>
-        )}
-        {step === 'processing' && (
-          <div className="openai-card flex flex-col items-center justify-center min-h-[420px] animate-fade-in text-center">
-            <h2 className="text-2xl font-bold text-blue-500 mb-8">Analyzing Image...</h2>
-            <div className="w-full max-w-md px-4 mb-6">
-              <div className="h-6 w-6 md:h-16 md:w-16 bg-blue-500 rounded-full transition-all duration-300 ease-out flex items-center justify-center mx-auto" style={{ width: 96, height: 96, minWidth: 48, minHeight: 48 }}>
-                <span className="text-white text-sm font-semibold">{progress}%</span>
-              </div>
-            </div>
-            <p className="text-gray-400 text-base">Please wait while we analyze your image for ancestry features.</p>
-          </div>
-        )}
-        {step === 'result' && (
-          <div className="relative">
-            {carouselSlides[carouselIndex]}
-            {/* Carousel dots */}
-            <div className="flex justify-center gap-2 mt-4">
-              {carouselSlides.map((_, idx) => (
-                <button key={idx} className={`w-4 h-4 rounded-full border-2 ${carouselIndex===idx ? 'bg-blue-600 border-blue-600' : 'bg-gray-300 border-gray-400'}`} onClick={()=>setCarouselIndex(idx)} aria-label={`Show Card ${idx+1}`}></button>
-              ))}
-            </div>
-            {/* Download/Share/New Reading buttons at the bottom, OpenAI.fm style */}
-            <div className="flex flex-wrap gap-6 justify-center items-center mt-10">
-              <button className="openai-btn openai-btn-light flex items-center gap-1 px-2 py-1 text-sm" onClick={handleDownloadText}>
-                <FaFilePdf className="text-sm" /> DOWNLOAD
-              </button>
-              <button className="openai-btn openai-btn-dark flex items-center gap-1 px-2 py-1 text-sm" onClick={()=>setShowShareModal(true)}>
-                <FaShare className="text-sm" /> SHARE
-              </button>
-              <button className="openai-btn openai-btn-light flex items-center gap-1 px-2 py-1 text-sm" onClick={handleNewReading}>
-                NEW READING
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-8 flex flex-col items-center gap-6">
-            <h3 className="font-bold text-lg mb-2">Share your result</h3>
-            <div className="flex gap-4">
-              <button className="openai-btn openai-btn-dark flex items-center gap-2" onClick={()=>handleShare('twitter')}><FaTwitter /> Twitter</button>
-              <button className="openai-btn openai-btn-dark flex items-center gap-2" onClick={()=>handleShare('facebook')}><FaFacebook /> Facebook</button>
-              <button className="openai-btn openai-btn-light flex items-center gap-2" onClick={()=>handleShare('copy')}>Copy Link</button>
-            </div>
-            <button className="text-blue-400 mt-3 underline" onClick={()=>setShowShareModal(false)}>Cancel</button>
-          </div>
-        </div>
-      )}
-    </div>
-=======
   useEffect(() => {
     // This effect should only run on the client side
     if (typeof window === 'undefined') return;
@@ -836,6 +697,5 @@ export default function Home() {
           </>
         )}
       </div>
->>>>>>> 4a0568c (Initial commit with clean history)
   );
 }

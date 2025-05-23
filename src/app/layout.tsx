@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-=======
 import '@coinbase/onchainkit/styles.css';
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -12,7 +7,6 @@ import DisclaimerPopups from '../components/DisclaimerPopups';
 import FloatingFooter from '../components/FloatingFooter';
 import BetaTag from '../components/BetaTag';
 import { Providers } from '../providers';
->>>>>>> 4a0568c (Initial commit with clean history)
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,21 +30,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-<<<<<<< HEAD
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-=======
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f7f8fa] min-h-screen`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#f7f8fa] min-h-screen`}>
         <Providers>
           <BetaTag />
           <DisclaimerPopups />
           {children}
           <FloatingFooter />
         </Providers>
->>>>>>> 4a0568c (Initial commit with clean history)
       </body>
     </html>
   );

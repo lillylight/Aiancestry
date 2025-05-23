@@ -4,12 +4,9 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { FaTwitter, FaFacebook, FaFilePdf } from "react-icons/fa";
 import AncestryPieChart, { AncestryDatum } from "./AncestryPieChart";
-<<<<<<< HEAD
-=======
 import { downloadAnalysisAsPDF } from "../utils/pdfUtils";
 import DNALogo from "./DNALogo";
 import { chartToImage } from "../utils/chartToImage";
->>>>>>> 4a0568c (Initial commit with clean history)
 
 interface ResultPanelProps {
   loading: boolean;
@@ -31,28 +28,12 @@ export default function ResultPanel({
   onNewReading,
 }: ResultPanelProps) {
   const resultRef = useRef<HTMLDivElement>(null);
-<<<<<<< HEAD
-  const [ancestryPieData, setAncestryPieData] = useState<AncestryDatum[]>([]);
-=======
   const pieChartRef = useRef<HTMLDivElement>(null);
-  const [ancestryPieData, setAncestryPieData] = useState<AncestryDatum[]>([]);
   const [pieChartDataUrl, setPieChartDataUrl] = useState<string | null>(null);
->>>>>>> 4a0568c (Initial commit with clean history)
 
-  useEffect(() => {
-    setAncestryPieData(ancestryData && ancestryData.length ? ancestryData : []);
-  }, [ancestryData]);
-
-<<<<<<< HEAD
-  const filledBtn = "custom-filled-btn px-1 py-0.5 text-[0.45rem] md:text-[0.55rem]";
-  const outlineBtn = "custom-outline-btn px-1 py-0.5 text-[0.45rem] md:text-[0.55rem]";
-
-  return (
-    <div className="bg-gradient-to-br from-[#23252b] to-[#18191a] rounded-2xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center shadow-2xl w-full max-w-[420px] md:max-w-[480px] min-h-[340px] md:min-h-[420px] mx-auto animate-fade-in">
-=======
   // Generate PNG of pie chart after render
   useEffect(() => {
-    if (!pieChartRef.current || ancestryPieData.length === 0) return;
+    if (!pieChartRef.current || ancestryData.length === 0) return;
     
     // Clear any previous URL
     setPieChartDataUrl(null);
@@ -130,7 +111,6 @@ export default function ResultPanel({
       <div className="flex justify-center mb-4">
         <DNALogo className="w-14 h-14 md:w-16 md:h-16 text-blue-400 drop-shadow-xl animate-premium-pop" />
       </div>
->>>>>>> 4a0568c (Initial commit with clean history)
       {loading && (
         <div className="flex flex-1 min-h-[180px] w-full items-center justify-center">
           <div className="flex flex-col items-center justify-center w-full text-center">
@@ -161,9 +141,6 @@ export default function ResultPanel({
               <div className="bg-[#23252b] rounded-lg p-5 mt-4 text-left text-gray-100 border border-blue-900/40 shadow-lg">
                 <h2 className="result-card-heading">AI Ancestry Analysis</h2>
                 <h2 className="result-card-heading mt-4 mb-1">Full Analysis</h2>
-<<<<<<< HEAD
-                <pre className="whitespace-pre-wrap text-xs bg-[#18191a] p-2 rounded border border-gray-700 overflow-x-auto max-h-52 floating-result-text !text-[#23252b] !opacity-100 !text-shadow-none text-center">{result}</pre>
-=======
                 <pre className="whitespace-pre-wrap text-xs bg-[#18191a] p-2 rounded border border-gray-700 overflow-x-auto max-h-52 floating-result-text !text-[#23252b] !opacity-100 !text-shadow-none text-center">
                   {(() => {
                     if (!result) return '';
@@ -177,7 +154,6 @@ export default function ResultPanel({
                     return shown;
                   })()}
                 </pre>
->>>>>>> 4a0568c (Initial commit with clean history)
               </div>
             )}
             {(!result && !loading) && (
@@ -187,9 +163,6 @@ export default function ResultPanel({
           {result && (
             <div className="flex w-full justify-between items-center mt-5 gap-4">
               <div className="flex gap-2">
-<<<<<<< HEAD
-                <button className={filledBtn} onClick={onDownloadPDF}><FaFilePdf className="mr-1" />Download</button>
-=======
                 <button
                   className={filledBtn}
                   onClick={handleDownloadPDF}
@@ -198,17 +171,12 @@ export default function ResultPanel({
                 >
                   <FaFilePdf className="mr-1" />PDF
                 </button>
->>>>>>> 4a0568c (Initial commit with clean history)
                 <button className={filledBtn} onClick={() => onShare("twitter")}><FaTwitter className="mr-1" />Share</button>
                 <button className={filledBtn} onClick={() => onShare("facebook")}><FaFacebook className="mr-1" />Share</button>
               </div>
               <button className={outlineBtn} onClick={onNewReading}>New Reading</button>
             </div>
           )}
-<<<<<<< HEAD
-          {ancestryPieData.length > 0 && (
-            <AncestryPieChart data={ancestryPieData} />
-=======
           {result && (
             <div>
               {!pieChartDataUrl && (
@@ -216,11 +184,10 @@ export default function ResultPanel({
               )}
             </div>
           )}
-          {ancestryPieData.length > 0 && (
+          {ancestryData.length > 0 && (
             <div ref={pieChartRef} style={{ width: '100%', maxWidth: 340, margin: '0 auto' }}>
-              <AncestryPieChart data={ancestryPieData} />
+              <AncestryPieChart data={ancestryData} />
             </div>
->>>>>>> 4a0568c (Initial commit with clean history)
           )}
         </>
       )}

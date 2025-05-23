@@ -17,21 +17,17 @@ export interface AncestryDatum {
 }
 
 export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
-  // Defensive: extract region and percent from any object that looks like it has them
   const sanitizedData = (Array.isArray(data)
     ? data
         .map((item) => {
-          // Accept both string and number for percent, trim region
           let region = '';
           let percent = 0;
           if (typeof item === 'object' && item !== null) {
-            // Type guard for region
             if ('region' in item && typeof (item as {region?: unknown}).region === 'string') {
               region = ((item as {region?: unknown}).region as string).trim();
             } else if ('label' in item && typeof (item as {label?: unknown}).label === 'string') {
               region = ((item as {label?: unknown}).label as string).trim();
             }
-            // Type guard for percent
             if ('percent' in item) {
               if (typeof (item as {percent?: unknown}).percent === 'number') {
                 percent = (item as {percent?: unknown}).percent as number;
@@ -80,10 +76,8 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
     ],
   };
   return (
-<<<<<<< HEAD
     <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", position: "relative" }}>
       <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
-      {/* Color Key */}
       <div
         style={{
           position: "absolute",
@@ -98,78 +92,18 @@ export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
         }}
       >
         {sanitizedData.map((item, i) => (
-          <div
-            key={item.region}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 2,
-            }}
-          >
-            <span
-              style={{
-                display: "inline-block",
-                width: 12,
-                height: 12,
-                borderRadius: 3,
-                background: colors[i % colors.length],
-              }}
-            ></span>
-            <span style={{ color: "#23252b" }}>
-              {item.region} ({item.percent}%)
-            </span>
+          <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 4 }}>
+            <span style={{
+              display: "inline-block",
+              width: 14,
+              height: 14,
+              borderRadius: 4,
+              marginRight: 8,
+              background: colors[i % colors.length],
+            }} />
+            <span>{item.region}: {item.percent}%</span>
           </div>
         ))}
-=======
-    <div className="ancestry-pie-chart-capture flex flex-col items-center justify-center mb-4">
-      <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", position: "relative", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ width: 320, height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
-        </div>
-        {/* Color Key */}
-        <div
-          style={{
-            marginTop: 12,
-            background: "rgba(255,255,255,0.95)",
-            borderRadius: 10,
-            padding: "8px 12px",
-            boxShadow: "0 2px 8px #0001",
-            fontSize: 12,
-            minWidth: 140,
-            width: 'fit-content',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            gap: 2,
-          }}
-        >
-          {sanitizedData.map((item, i) => (
-            <div
-              key={item.region}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 0,
-              }}
-            >
-              <span
-                style={{
-                  display: "inline-block",
-                  width: 12,
-                  height: 12,
-                  borderRadius: 3,
-                  background: colors[i % colors.length],
-                }}
-              ></span>
-              <span style={{ color: "#23252b" }}>
-                {item.region} ({item.percent}%)
-              </span>
-            </div>
-          ))}
-        </div>
->>>>>>> 4a0568c (Initial commit with clean history)
       </div>
     </div>
   );
