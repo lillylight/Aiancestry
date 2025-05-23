@@ -14,7 +14,7 @@ import {
   WalletDropdownDisconnect,
   ConnectWalletText,
 } from '@coinbase/onchainkit/wallet';
-import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
+import { Address, Avatar, Name, Identity } from '@coinbase/onchainkit/identity';
 import { Checkout, CheckoutButton, CheckoutStatus } from '@coinbase/onchainkit/checkout';
 import { motion } from 'framer-motion';
 // Import useAccount from wagmi to properly detect wallet connection
@@ -607,16 +607,13 @@ export default function Home() {
                               <div className="flex flex-col items-center w-full">
                                 <div style={{ display: step === 'upload' ? 'block' : 'none' }}>
                                   <CheckoutButton
-                                    id="pay-btn"
-                                    coinbaseBranded
+                                    coinbaseBranded={true}
                                     className="openai-btn openai-btn-green px-4 py-2 text-base mx-auto mt-7 w-40"
                                     onSuccess={() => {
                                       setStep('processing');
                                       triggerAnalysis(image);
                                     }}
-                                  >
-                                    Reveal My Roots
-                                  </CheckoutButton>
+                                  />
                                 </div>
                                 <div className="flex justify-center w-full mt-2">
                                   <CheckoutStatus />
