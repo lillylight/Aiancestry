@@ -28,6 +28,10 @@ export default function ResultPanel({
   onNewReadingAction,
 }: ResultPanelProps) {
   const resultRef = useRef<HTMLDivElement>(null);
+<<<<<<< HEAD
+=======
+  const pieChartRef = useRef<HTMLDivElement>(null);
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
   const [ancestryPieData, setAncestryPieData] = useState<AncestryDatum[]>([]);
   const [pieChartDataUrl, setPieChartDataUrl] = useState<string | null>(null);
 
@@ -35,6 +39,7 @@ export default function ResultPanel({
     setAncestryPieData(ancestryData && ancestryData.length ? ancestryData : []);
   }, [ancestryData]);
 
+<<<<<<< HEAD
   // Handle chart ready callback
   const handleChartReady = (dataUrl: string) => {
     console.log('Chart ready callback received, data URL length:', dataUrl.length);
@@ -46,6 +51,62 @@ export default function ResultPanel({
       (window as any).currentChartDataUrl = dataUrl;
     }
   };
+=======
+  // Generate PNG of pie chart after render
+  useEffect(() => {
+    if (!pieChartRef.current || ancestryPieData.length === 0) return;
+    
+    // Clear any previous URL
+    setPieChartDataUrl(null);
+    
+    // Use multiple attempts with increasing delays to ensure reliable capture
+    const captureChart = (attempt = 1, maxAttempts = 3) => {
+      if (attempt > maxAttempts) {
+        console.warn(`Chart capture failed after ${maxAttempts} attempts`);
+        return;
+      }
+      
+      try {
+        const chartElement = pieChartRef.current?.querySelector('.ancestry-pie-chart-capture');
+        if (!chartElement) {
+          console.error(`Chart element not found in ref (attempt ${attempt})`);
+          setTimeout(() => captureChart(attempt + 1), 800 * attempt);
+          return;
+        }
+        
+        console.log(`Capturing chart element (attempt ${attempt}):`, chartElement);
+        
+        // Force a repaint before capturing
+        setTimeout(() => {
+          chartToImage(chartElement as HTMLElement)
+            .then(url => {
+              console.log(`Pie chart captured (attempt ${attempt}), length:`, url?.length || 0);
+              if (url && url.startsWith('data:image/png;base64,') && url.length > 1000) {
+                setPieChartDataUrl(url);
+              } else {
+                console.error(`Invalid chart data URL format or too small (attempt ${attempt})`);
+                if (attempt < maxAttempts) {
+                  setTimeout(() => captureChart(attempt + 1), 800 * attempt);
+                }
+              }
+            })
+            .catch(err => {
+              console.error(`Error capturing chart (attempt ${attempt}):`, err);
+              setTimeout(() => captureChart(attempt + 1), 800 * attempt);
+            });
+        }, 200);
+      } catch (err) {
+        console.error(`Error during chart capture setup (attempt ${attempt}):`, err);
+        setTimeout(() => captureChart(attempt + 1), 800 * attempt);
+      }
+    };
+    
+    // Start the capture process after a delay to ensure chart is rendered
+    const timer = setTimeout(() => captureChart(), 2000);
+    
+    return () => clearTimeout(timer);
+  }, [ancestryPieData]);
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
 
   const filledBtn = "custom-filled-btn px-1 py-0.5 text-[0.45rem] md:text-[0.55rem]";
   const outlineBtn = "custom-outline-btn px-1 py-0.5 text-[0.45rem] md:text-[0.55rem]";
@@ -62,6 +123,7 @@ export default function ResultPanel({
     }
   }, [pieChartDataUrl, ancestryPieData]);
 
+<<<<<<< HEAD
   const handleDownloadPDF = async () => {
     if (!result) return;
     
@@ -78,14 +140,49 @@ export default function ResultPanel({
       } else {
         console.warn('No chart URL available, generating PDF without chart');
         downloadAnalysisAsPDF(result, ancestryPieData);
+=======
+  const handleDownloadPDF = () => {
+    if (!result) return;
+    
+    if (ancestryPieData.length > 0) {
+      // Try one more capture if we don't have a chart URL yet
+      if (!pieChartDataUrl && pieChartRef.current !== null) {
+        try {
+          const chartElement = pieChartRef.current.querySelector('.ancestry-pie-chart-capture');
+          if (chartElement) {
+            chartToImage(chartElement as HTMLElement).then(url => {
+              if (url && url.startsWith('data:image/png;base64,')) {
+                // Use the newly captured URL directly
+                downloadAnalysisAsPDF(result, ancestryPieData, url);
+              } else {
+                // Fallback if capture fails
+                downloadAnalysisAsPDF(result, ancestryPieData);
+              }
+            }).catch(() => {
+              downloadAnalysisAsPDF(result, ancestryPieData);
+            });
+          } else {
+            downloadAnalysisAsPDF(result, ancestryPieData);
+          }
+        } catch (err) {
+          console.error('Last-minute chart capture failed:', err);
+          downloadAnalysisAsPDF(result, ancestryPieData);
+        }
+      } else {
+        // Use previously captured URL
+        downloadAnalysisAsPDF(result, ancestryPieData, pieChartDataUrl || undefined);
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
       }
     } else {
       // No chart data at all
       downloadAnalysisAsPDF(result, []);
     }
+<<<<<<< HEAD
     
     // Call the parent's action handler
     onDownloadPDFAction();
+=======
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
   };
 
   return (
@@ -148,8 +245,13 @@ export default function ResultPanel({
               <div className="flex gap-2">
                 <button
                   className={filledBtn}
+<<<<<<< HEAD
                   onClick={handleDownloadPDF}
                   disabled={loading}
+=======
+                  onClick={onDownloadPDFAction}
+                  disabled={loading || !pieChartDataUrl}
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
                   aria-label="Download as PDF"
                 >
                   <FaFilePdf className="mr-1" />PDF
@@ -168,8 +270,13 @@ export default function ResultPanel({
             </div>
           )}
           {ancestryPieData.length > 0 && (
+<<<<<<< HEAD
             <div style={{ width: '100%', maxWidth: 340, margin: '0 auto' }}>
               <AncestryPieChart data={ancestryPieData} onChartReady={handleChartReady} />
+=======
+            <div ref={pieChartRef} style={{ width: '100%', maxWidth: 340, margin: '0 auto' }}>
+              <AncestryPieChart data={ancestryPieData} />
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
             </div>
           )}
         </>

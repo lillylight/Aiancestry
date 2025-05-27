@@ -74,6 +74,7 @@ export default function Home() {
   // Use wagmi's useAccount hook for reliable wallet connection detection
   const { isConnected, address } = useAccount();
   const [mounted, setMounted] = useState(false);
+<<<<<<< HEAD
   // Set global user info for PDF generation
   useEffect(() => {
     if (typeof window !== 'undefined' && address) {
@@ -91,6 +92,12 @@ export default function Home() {
         (window as any).userBasename = displayName;
         (window as any).userName = displayName;
       }, 1000);
+=======
+  // Set global user name for PDF generation
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).aiAncestryUserName = address || '';
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
     }
   }, [address]);
   

@@ -7,8 +7,12 @@ import {
   Legend,
   ChartData,
 } from "chart.js";
+<<<<<<< HEAD
 import React, { useRef, useEffect } from "react";
 import { captureChartWhenReady } from "../utils/chartCapture";
+=======
+import React from "react";
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -17,6 +21,7 @@ export interface AncestryDatum {
   percent: number;
 }
 
+<<<<<<< HEAD
 interface AncestryPieChartProps {
   data: AncestryDatum[];
   onChartReady?: (dataUrl: string) => void;
@@ -26,6 +31,9 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
   const chartRef = useRef<any>(null);
   const capturedRef = useRef<boolean>(false);
   
+=======
+export default function AncestryPieChart({ data }: { data: AncestryDatum[] }) {
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
   const sanitizedData = (Array.isArray(data)
     ? data
         .map((item) => {
@@ -61,6 +69,7 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
         .filter((item) => item !== null)
     : []) as AncestryDatum[];
 
+<<<<<<< HEAD
   // Reset captured flag when data changes
   useEffect(() => {
     capturedRef.current = false;
@@ -68,6 +77,9 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
 
   if (!sanitizedData || sanitizedData.length === 0) return null;
   
+=======
+  if (!sanitizedData || sanitizedData.length === 0) return null;
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
   const colors = [
     "#2f80ed",
     "#f2994a",
@@ -79,7 +91,10 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
     "#6fcf97",
     "#bb6bd9",
   ];
+<<<<<<< HEAD
   
+=======
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
   const chartData: ChartData<"pie"> = {
     labels: sanitizedData.map((item) => item.region),
     datasets: [
@@ -87,6 +102,7 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
         label: "Ancestry %",
         data: sanitizedData.map((item) => item.percent),
         backgroundColor: sanitizedData.map((_, i) => colors[i % colors.length]),
+<<<<<<< HEAD
         borderWidth: 2,
         borderColor: '#fff',
       },
@@ -165,6 +181,26 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
         minWidth: 180,
         marginTop: 20,
       }}>
+=======
+        borderWidth: 1,
+      },
+    ],
+  };
+  return (
+    <div style={{ maxWidth: 400, minHeight: 420, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+      <Pie data={chartData} options={{ plugins: { legend: { display: false } } }} />
+      <div
+        style={{
+          background: "rgba(255,255,255,0.95)",
+          borderRadius: 10,
+          padding: "12px 18px",
+          boxShadow: "0 2px 8px #0001",
+          fontSize: 14,
+          minWidth: 180,
+          marginTop: 10,
+        }}
+      >
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
         {sanitizedData.map((item, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
             <span style={{
@@ -175,7 +211,11 @@ export default function AncestryPieChart({ data, onChartReady }: AncestryPieChar
               marginRight: 10,
               background: colors[i % colors.length],
             }} />
+<<<<<<< HEAD
             <span style={{ color: "#000000", fontWeight: 500 }}>{item.region}: {item.percent}%</span>
+=======
+            <span>{item.region}: {item.percent}%</span>
+>>>>>>> 217b26eb713b6dd3cf175cda7e50c9068744a8cf
           </div>
         ))}
       </div>
