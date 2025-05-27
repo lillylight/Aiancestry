@@ -19,8 +19,8 @@ function renderMarkdownTable(doc: jsPDF, lines: string[], pageWidth: number, sta
     body,
     styles: { 
       font: 'helvetica', 
-      fontSize: 14, 
-      cellPadding: 12, 
+      fontSize: 12, 
+      cellPadding: 10, 
       halign: 'center', 
       valign: 'middle', 
       textColor: '#111', 
@@ -30,7 +30,7 @@ function renderMarkdownTable(doc: jsPDF, lines: string[], pageWidth: number, sta
       fillColor: [235, 238, 245], 
       textColor: '#111', 
       fontStyle: 'bold', 
-      fontSize: 16 
+      fontSize: 13 
     },
     tableLineColor: [200, 200, 200],
     tableLineWidth: 0.5,
@@ -61,9 +61,9 @@ function renderParagraphsImproved(
   startY: number, 
   opts?: { fontSize?: number, color?: string }
 ): number {
-  const fontSize = opts?.fontSize || 16; // Increased from 12 to 16
-  const lineHeight = fontSize * 1.8; // Increased line height for better readability
-  const paragraphSpacing = lineHeight * 1.2; // More space between paragraphs
+  const fontSize = opts?.fontSize || 13; // Regular text at 13pt
+  const lineHeight = fontSize * 1.6; // Good line height for readability
+  const paragraphSpacing = lineHeight * 1.0; // Reasonable space between paragraphs
   const marginLeft = 40;
   const marginRight = 40;
   const marginBottom = 40;
@@ -92,9 +92,9 @@ function renderParagraphsImproved(
     const hasBoldSection = colonIndex > 0 && colonIndex < para.length - 1;
     
     if (isHeading) {
-      // Make headings bold and larger
+      // Make headings bold at 15pt
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(fontSize + 4);
+      doc.setFontSize(15);
       doc.setTextColor('#1a1a1a');
     }
     
@@ -109,9 +109,9 @@ function renderParagraphsImproved(
       const boldPart = para.substring(0, colonIndex + 1);
       const normalPart = para.substring(colonIndex + 1).trim();
       
-      // Render bold part
+      // Render bold part at 15pt
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(fontSize);
+      doc.setFontSize(15);
       doc.setTextColor('#1a1a1a');
       
       const boldLines = doc.splitTextToSize(boldPart, textWidth);
@@ -280,7 +280,7 @@ export function downloadAnalysisAsPDF(
   doc.text('Generated with AI Ancestry', pageWidth / 2, 160, { align: 'center' });
   
   // Date
-  doc.setFontSize(16); // Increased from 12
+    doc.setFontSize(13); // Legend text at 13pt
   doc.setTextColor('#888');
   doc.text('Date: ' + new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
@@ -389,7 +389,7 @@ export function downloadAnalysisAsPDF(
   if (analysisParas.length > 0) {
     doc.addPage();
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24); // Increased from 18
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Analysis', 40, 60);
     
@@ -399,7 +399,7 @@ export function downloadAnalysisAsPDF(
     doc.line(40, 70, 200, 70);
     
     renderParagraphsImproved(doc, analysisParas, pageWidth, 100, { 
-      fontSize: 16, 
+      fontSize: 13, 
       color: '#333' 
     });
   }
@@ -411,7 +411,7 @@ export function downloadAnalysisAsPDF(
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24); // Increased from 18
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Comprehensive Ancestry Breakdown', 40, 60);
     
@@ -421,7 +421,7 @@ export function downloadAnalysisAsPDF(
     doc.line(40, 70, 400, 70);
     
     renderParagraphsImproved(doc, comprehensiveParas, pageWidth, 100, { 
-      fontSize: 16, 
+      fontSize: 13, 
       color: '#333' 
     });
   }
@@ -433,7 +433,7 @@ export function downloadAnalysisAsPDF(
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24); // Increased from 18
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Summary Table', 40, 60);
     
@@ -449,7 +449,7 @@ export function downloadAnalysisAsPDF(
   if (conclusionParas.length > 0) {
     doc.addPage();
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24); // Increased from 18
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Conclusion', 40, 60);
     
@@ -459,7 +459,7 @@ export function downloadAnalysisAsPDF(
     doc.line(40, 70, 180, 70);
     
     renderParagraphsImproved(doc, conclusionParas, pageWidth, 100, { 
-      fontSize: 16, 
+      fontSize: 13, 
       color: '#333' 
     });
   }
@@ -471,7 +471,7 @@ export function downloadAnalysisAsPDF(
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(26); // Increased from 20
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Ancestry Visualization', pageWidth / 2, 60, { align: 'center' });
     
@@ -544,7 +544,7 @@ export function downloadAnalysisAsPDF(
     // Add percentages page (Page 7)
     doc.addPage();
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24); // Increased from 18
+    doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Ancestry Percentages', 40, 60);
     
@@ -557,12 +557,12 @@ export function downloadAnalysisAsPDF(
     ancestryData.forEach(item => {
       // Region name
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18); // Increased from 14
+      doc.setFontSize(14); // Region names slightly larger
       doc.text(item.region, 40, y);
       
       // Percentage
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(18); // Increased from 14
+      doc.setFontSize(14); // Percentage same size
       doc.text(`${item.percent}%`, pageWidth - 40, y, { align: 'right' });
       
       // Add a light separator line
@@ -570,7 +570,7 @@ export function downloadAnalysisAsPDF(
       doc.setLineWidth(0.5);
       doc.line(40, y + 10, pageWidth - 40, y + 10);
       
-      y += 35; // Increased spacing
+      y += 30; // Reasonable spacing
     });
     
     // Add final note at bottom
