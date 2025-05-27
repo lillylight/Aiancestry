@@ -109,36 +109,57 @@ function renderParagraphsImproved(
       const boldPart = para.substring(0, colonIndex + 1);
       const normalPart = para.substring(colonIndex + 1).trim();
       
-      // Render bold part at 15pt
+      // Render bold part at 15pt inline with normal text
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
       doc.setTextColor('#1a1a1a');
       
-      const boldLines = doc.splitTextToSize(boldPart, textWidth);
-      for (const line of boldLines) {
+      // Measure the width of the bold part
+      const boldWidth = doc.getTextWidth(boldPart + ' ');
+      
+      // Check if we need to wrap
+      if (boldWidth + doc.getTextWidth(normalPart) > textWidth) {
+        // Render bold part on its own line
         if (y > pageBottom) {
           doc.addPage();
           y = marginBottom;
         }
-        doc.text(line, marginLeft, y);
+        doc.text(boldPart, marginLeft, y);
         y += lineHeight;
-      }
-      
-      // Render normal part
-      if (normalPart) {
+        
+        // Render normal part
+        if (normalPart) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(fontSize);
+          doc.setTextColor(opts?.color || '#000');
+          
+          const normalLines = doc.splitTextToSize(normalPart, textWidth);
+          for (const line of normalLines) {
+            if (y > pageBottom) {
+              doc.addPage();
+              y = marginBottom;
+            }
+            doc.text(line, marginLeft, y);
+            y += lineHeight;
+          }
+        }
+      } else {
+        // Render both parts on the same line
+        if (y > pageBottom) {
+          doc.addPage();
+          y = marginBottom;
+        }
+        
+        // Bold part
+        doc.text(boldPart + ' ', marginLeft, y);
+        
+        // Normal part at same y position
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(fontSize);
         doc.setTextColor(opts?.color || '#000');
+        doc.text(normalPart, marginLeft + boldWidth, y);
         
-        const normalLines = doc.splitTextToSize(normalPart, textWidth);
-        for (const line of normalLines) {
-          if (y > pageBottom) {
-            doc.addPage();
-            y = marginBottom;
-          }
-          doc.text(line, marginLeft, y);
-          y += lineHeight;
-        }
+        y += lineHeight;
       }
     } else {
       // Regular rendering
