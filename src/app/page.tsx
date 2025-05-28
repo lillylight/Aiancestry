@@ -202,17 +202,39 @@ export default function Home() {
   const handleDownloadPDF = async () => {
     // Try to get the pie chart image as PNG
     let pieChartDataUrl: string | undefined = undefined;
-    const chartEl = document.querySelector(".ancestry-pie-chart-capture") as HTMLElement;
+    
+    // First try to find the chart wrapper
+    const chartEl = document.querySelector(".ancestry-pie-chart-wrapper") as HTMLElement;
     if (chartEl) {
       try {
-        pieChartDataUrl = await chartToImage(chartEl);
+        // Create a temporary canvas to capture the chart
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = 400;
+        canvas.height = 500;
+        
+        // Use html2canvas to capture the chart
+        const html2canvas = (await import('html2canvas')).default;
+        const capturedCanvas = await html2canvas(chartEl, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+        });
+        
+        pieChartDataUrl = capturedCanvas.toDataURL('image/png');
+        console.log('Chart captured for PDF:', pieChartDataUrl ? 'success' : 'failed');
       } catch (e) {
-        // fallback: no chart image
+        console.error('Failed to capture chart:', e);
       }
     }
-    import('../utils/pdfUtils').then(({ downloadAnalysisAsPDF }) => {
-      downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
-    });
+    
+    // Import and call the PDF function
+    const { downloadAnalysisAsPDF } = await import('../utils/pdfUtils');
+    await downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
   };
 
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {

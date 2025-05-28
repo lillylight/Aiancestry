@@ -80,12 +80,9 @@ function renderParagraphsImproved(
       continue; 
     }
     
-    // Check if this is a heading (contains colon at the end or starts with capital letters)
-    const isHeading = /^[A-Z][^:]*:$/.test(para.trim()) || 
-                     /^[A-Z\s]+$/.test(para.trim()) ||
-                     para.toLowerCase().includes('ancestry') ||
-                     para.toLowerCase().includes('traits') ||
-                     para.toLowerCase().includes('features');
+    // Check if this is a heading (only if it's a standalone line with colon at the end or all caps)
+    const isHeading = /^[A-Z][^:]*:$/.test(para.trim()) && para.trim().length < 50 || 
+                     /^[A-Z\s]+$/.test(para.trim()) && para.trim().length < 30;
     
     // Check for bold sections (text before colon)
     const colonIndex = para.indexOf(':');
@@ -105,43 +102,60 @@ function renderParagraphsImproved(
     }
     
     if (hasBoldSection && !isHeading) {
-      // Split at colon and render bold part + normal part
-      const boldPart = para.substring(0, colonIndex + 1);
-      const normalPart = para.substring(colonIndex + 1).trim();
+      // IMPORTANT: Only text BEFORE the colon (including the colon) should be bold
+      // Everything AFTER the colon must be normal (not bold)
+      const boldPart = para.substring(0, colonIndex + 1); // Text before and including ":"
+      const normalPart = para.substring(colonIndex + 1).trim(); // Text after ":" - NEVER BOLD
       
-      // Render bold part at 15pt inline with normal text
+      // Render bold part at same size as normal text (13pt)
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.setTextColor('#1a1a1a');
+      doc.setFontSize(fontSize); // Use same fontSize as normal text
+      doc.setTextColor(opts?.color || '#000');
       
       // Measure the width of the bold part
       const boldWidth = doc.getTextWidth(boldPart + ' ');
       
+      // Set normal font for measuring
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(fontSize);
+      
       // Check if we need to wrap
       if (boldWidth + doc.getTextWidth(normalPart) > textWidth) {
-        // Render bold part on its own line
-        if (y > pageBottom) {
-          doc.addPage();
-          y = marginBottom;
-        }
-        doc.text(boldPart, marginLeft, y);
-        y += lineHeight;
+        // Need to wrap - render as a single paragraph with bold part inline
+        const fullText = boldPart + ' ' + normalPart;
+        const lines = doc.splitTextToSize(fullText, textWidth);
         
-        // Render normal part
-        if (normalPart) {
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(fontSize);
-          doc.setTextColor(opts?.color || '#000');
-          
-          const normalLines = doc.splitTextToSize(normalPart, textWidth);
-          for (const line of normalLines) {
-            if (y > pageBottom) {
-              doc.addPage();
-              y = marginBottom;
-            }
-            doc.text(line, marginLeft, y);
-            y += lineHeight;
+        for (let lineIdx = 0; lineIdx < lines.length; lineIdx++) {
+          const line = lines[lineIdx];
+          if (y > pageBottom) {
+            doc.addPage();
+            y = marginBottom;
           }
+          
+          // For the first line, check if it contains the bold part
+          if (lineIdx === 0 && line.includes(boldPart)) {
+            // Render the bold part
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(fontSize);
+            doc.text(boldPart + ' ', marginLeft, y);
+            
+            // Render the rest of the line - ALWAYS NORMAL (NOT BOLD)
+            const restOfLine = line.substring(boldPart.length + 1);
+            if (restOfLine) {
+              doc.setFont('helvetica', 'normal'); // Ensure normal font
+              doc.setFontSize(fontSize);
+              doc.setTextColor(opts?.color || '#000');
+              doc.text(restOfLine, marginLeft + boldWidth, y);
+            }
+          } else {
+            // Render subsequent lines - ALWAYS NORMAL (NOT BOLD)
+            doc.setFont('helvetica', 'normal'); // Ensure normal font
+            doc.setFontSize(fontSize);
+            doc.setTextColor(opts?.color || '#000');
+            doc.text(line, marginLeft, y);
+          }
+          
+          y += lineHeight;
         }
       } else {
         // Render both parts on the same line
@@ -151,6 +165,9 @@ function renderParagraphsImproved(
         }
         
         // Bold part
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(fontSize);
+        doc.setTextColor(opts?.color || '#000');
         doc.text(boldPart + ' ', marginLeft, y);
         
         // Normal part at same y position
@@ -270,7 +287,7 @@ function getUserInfo(): { name?: string, wallet?: string } {
   };
 }
 
-export function downloadAnalysisAsPDF(
+export async function downloadAnalysisAsPDF(
   result: string,
   ancestryData: AncestryDatum[],
   pieChartDataUrl?: string
@@ -309,30 +326,69 @@ export function downloadAnalysisAsPDF(
     day: 'numeric' 
   }), pageWidth / 2, 200, { align: 'center' });
   
-  // User info
+  // User info - only show name if available, skip wallet
   const userInfo = getUserInfo();
   let yOffset = 240;
   
   if (userInfo.name) {
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18); // Increased from 14
-    doc.setTextColor('#2f80ed');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(14); // Smaller font size
+    doc.setTextColor('#888888'); // Gray color
     doc.text(`Generated for: ${userInfo.name}`, pageWidth / 2, yOffset, { align: 'center' });
     yOffset += 30;
   }
   
-  if (userInfo.wallet) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(14); // Increased from 11
-    doc.setTextColor('#666');
-    const shortWallet = userInfo.wallet.slice(0, 6) + '...' + userInfo.wallet.slice(-4);
-    doc.text(`Wallet: ${shortWallet}`, pageWidth / 2, yOffset, { align: 'center' });
+  // Add logo in the middle section
+  const logoWidth = 120;
+  const logoHeight = 120;
+  const logoX = (pageWidth - logoWidth) / 2;
+  const logoY = 280;
+  
+  try {
+    // Try to add the baobab tree logo
+    // For now, we'll use a direct base64 approach or URL
+    // In production, you'd want to import the image or use a base64 string
+    if (typeof window !== 'undefined') {
+      // Try to load the logo from public folder
+      const img = new Image();
+      img.src = '/logo.png';
+      
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          try {
+            // Create a canvas to convert image to base64
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0);
+              const dataUrl = canvas.toDataURL('image/png');
+              doc.addImage(dataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+            }
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        };
+        img.onerror = () => reject(new Error('Failed to load logo'));
+      });
+    }
+  } catch (error) {
+    console.log('Could not add logo to PDF:', error);
+    // Fallback: draw a simple placeholder
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(2);
+    doc.circle(pageWidth / 2, 330, 40);
+    doc.setFontSize(12);
+    doc.setTextColor('#999');
+    doc.text('AI', pageWidth / 2, 335, { align: 'center' });
   }
   
   // Add some decorative elements to fill space
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(1);
-  doc.line(100, 350, pageWidth - 100, 350);
+  doc.line(100, 420, pageWidth - 100, 420);
   
   // Add a note at the bottom of cover page
   doc.setFont('helvetica', 'italic');
@@ -485,84 +541,8 @@ export function downloadAnalysisAsPDF(
     });
   }
   
-  // Ancestry Chart Page (Page 6)
+  // Ancestry Percentages Page (Page 6)
   if (ancestryData && ancestryData.length > 0) {
-    doc.addPage();
-    doc.setFillColor(252, 252, 255);
-    doc.rect(0, 0, pageWidth, pageHeight, 'F');
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15); // Title at 15pt
-    doc.setTextColor('#23252b');
-    doc.text('Ancestry Visualization', pageWidth / 2, 60, { align: 'center' });
-    
-    // Try to add the image first
-    let chartAdded = false;
-    
-    if (pieChartDataUrl && pieChartDataUrl.startsWith('data:image/')) {
-      try {
-        console.log('Attempting to add chart image...');
-        
-        // Extract base64 data
-        const base64Data = pieChartDataUrl.split(',')[1];
-        if (base64Data) {
-          const imgWidth = 350; // Increased from 300
-          const imgHeight = 350; // Increased from 300
-          const imgX = (pageWidth - imgWidth) / 2;
-          const imgY = 100;
-          
-          // Try adding the image
-          doc.addImage(base64Data, 'PNG', imgX, imgY, imgWidth, imgHeight);
-          chartAdded = true;
-          console.log('Chart image added successfully!');
-        }
-      } catch (error) {
-        console.error('Failed to add chart image:', error);
-      }
-    }
-    
-    // If image failed, draw a simple chart
-    if (!chartAdded) {
-      console.log('Drawing fallback chart...');
-      const chartCenterX = pageWidth / 2;
-      const chartCenterY = 280;
-      const chartRadius = 120; // Increased from 100
-      
-      drawSimplePieChart(doc, ancestryData, chartCenterX, chartCenterY, chartRadius);
-    }
-    
-    // Add legend
-    let legendY = 480;
-    const colors = [
-      [47, 128, 237],   // #2f80ed
-      [242, 153, 74],   // #f2994a
-      [39, 174, 96],    // #27ae60
-      [235, 87, 87],    // #eb5757
-      [155, 81, 224],   // #9b51e0
-      [86, 204, 242],   // #56ccf2
-      [242, 201, 76],   // #f2c94c
-      [111, 207, 151],  // #6fcf97
-      [187, 107, 217]   // #bb6bd9
-    ];
-    
-    doc.setFontSize(16); // Increased from 12
-    ancestryData.forEach((item, i) => {
-      const color = colors[i % colors.length];
-      const legendX = pageWidth / 2 - 120;
-      
-      // Color box
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.rect(legendX, legendY - 12, 16, 16, 'F'); // Increased box size
-      
-      // Text
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor('#23252b');
-      doc.text(`${item.region}: ${item.percent}%`, legendX + 25, legendY);
-      
-      legendY += 28; // Increased spacing
-    });
-    
-    // Add percentages page (Page 7)
     doc.addPage();
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(15); // Title at 15pt
@@ -599,6 +579,98 @@ export function downloadAnalysisAsPDF(
     doc.setFontSize(14);
     doc.setTextColor('#666');
     doc.text('Note: Percentages are AI-generated estimates based on facial analysis.', pageWidth / 2, pageHeight - 60, { align: 'center' });
+  }
+  
+  // Ancestry Chart Page (Last Page)
+  if (ancestryData && ancestryData.length > 0 && pieChartDataUrl) {
+    doc.addPage();
+    doc.setFillColor(252, 252, 255);
+    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15); // Title at 15pt
+    doc.setTextColor('#23252b');
+    doc.text('Ancestry Visualization', pageWidth / 2, 60, { align: 'center' });
+    
+    // Try to add the pie chart image using the same method as the logo
+    let chartAdded = false;
+    const chartWidth = 350;
+    const chartHeight = 350;
+    const chartX = (pageWidth - chartWidth) / 2;
+    const chartY = 100;
+    
+    try {
+      if (typeof window !== 'undefined' && pieChartDataUrl) {
+        // Create an image element
+        const img = new Image();
+        img.src = pieChartDataUrl;
+        
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => {
+            try {
+              // Create a canvas to ensure proper image handling
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                doc.addImage(dataUrl, 'PNG', chartX, chartY, chartWidth, chartHeight);
+                chartAdded = true;
+              }
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          };
+          img.onerror = () => reject(new Error('Failed to load chart image'));
+        });
+      }
+    } catch (error) {
+      console.log('Could not add pie chart to PDF:', error);
+    }
+    
+    // If image failed, draw a simple chart as fallback
+    if (!chartAdded) {
+      console.log('Drawing fallback chart...');
+      const chartCenterX = pageWidth / 2;
+      const chartCenterY = 280;
+      const chartRadius = 120;
+      
+      drawSimplePieChart(doc, ancestryData, chartCenterX, chartCenterY, chartRadius);
+    }
+    
+    // Add legend below the chart
+    let legendY = 480;
+    const colors = [
+      [47, 128, 237],   // #2f80ed
+      [242, 153, 74],   // #f2994a
+      [39, 174, 96],    // #27ae60
+      [235, 87, 87],    // #eb5757
+      [155, 81, 224],   // #9b51e0
+      [86, 204, 242],   // #56ccf2
+      [242, 201, 76],   // #f2c94c
+      [111, 207, 151],  // #6fcf97
+      [187, 107, 217]   // #bb6bd9
+    ];
+    
+    doc.setFontSize(16);
+    ancestryData.forEach((item, i) => {
+      const color = colors[i % colors.length];
+      const legendX = pageWidth / 2 - 120;
+      
+      // Color box
+      doc.setFillColor(color[0], color[1], color[2]);
+      doc.rect(legendX, legendY - 12, 16, 16, 'F');
+      
+      // Text
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor('#23252b');
+      doc.text(`${item.region}: ${item.percent}%`, legendX + 25, legendY);
+      
+      legendY += 28;
+    });
   }
   
   // Save the PDF
