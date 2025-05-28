@@ -203,66 +203,85 @@ export default function Home() {
     // Try to get the pie chart image as PNG
     let pieChartDataUrl: string | undefined = undefined;
     
-    // First ensure we're on the pie chart slide
-    if (carouselIndex !== 3) {
-      setCarouselIndex(3);
-      // Wait for the slide transition
-      await new Promise(resolve => setTimeout(resolve, 500));
+    // Parse ancestry data for the chart
+    let chartData: AncestryDatum[] = [];
+    
+    // First try to get data from the summary table
+    const tableMatch = result.match(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/);
+    if (tableMatch) {
+      const rows = tableMatch[0].trim().split(/\n/).filter(Boolean);
+      if (rows.length >= 3) {
+        chartData = rows.slice(2).map(row => {
+          const cells = row.split('|').slice(1,-1).map(cell => cell.trim());
+          const region = cells[0];
+          const percent = parseInt(cells[1].replace(/[^\d]/g, ''), 10);
+          return region && !isNaN(percent) ? { region, percent } : null;
+        }).filter((item): item is { region: string; percent: number } => item !== null);
+      }
     }
     
-    // Wait a bit more to ensure chart is fully rendered
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // Fallback to ancestryData if no table data
+    if (!chartData.length && ancestryData && ancestryData.length) {
+      chartData = ancestryData;
+    }
     
-    // First try to find the chart wrapper
-    const chartEl = document.querySelector(".ancestry-pie-chart-wrapper") as HTMLElement;
-    console.log('Chart element found:', !!chartEl);
-    
-    if (chartEl) {
+    // If we have data, create a temporary chart for capture
+    if (chartData.length > 0) {
       try {
-        // Make sure the element is visible
-        const originalStyle = {
-          position: chartEl.style.position,
-          left: chartEl.style.left,
-          top: chartEl.style.top,
-          visibility: chartEl.style.visibility,
-          display: chartEl.style.display
-        };
+        console.log('Creating temporary chart for PDF with data:', chartData);
         
-        // Temporarily make it visible if needed
-        chartEl.style.position = 'relative';
-        chartEl.style.left = 'auto';
-        chartEl.style.top = 'auto';
-        chartEl.style.visibility = 'visible';
-        chartEl.style.display = 'block';
+        // Create a temporary container
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.width = '400px';
+        tempContainer.style.height = '500px';
+        tempContainer.style.background = 'white';
+        document.body.appendChild(tempContainer);
         
-        // Use html2canvas to capture the chart
-        const html2canvas = (await import('html2canvas')).default;
-        const capturedCanvas = await html2canvas(chartEl, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          logging: true,
-          useCORS: true,
-          allowTaint: true,
-          width: 400,
-          height: 500
+        // Import React DOM for rendering
+        const ReactDOM = (await import('react-dom/client')).default;
+        const root = ReactDOM.createRoot(tempContainer);
+        
+        // Render the chart
+        await new Promise<void>((resolve) => {
+          root.render(
+            <div style={{ padding: '20px', background: 'white' }}>
+              <AncestryPieChart data={chartData} />
+            </div>
+          );
+          
+          // Wait for chart to render
+          setTimeout(resolve, 1000);
         });
         
-        pieChartDataUrl = capturedCanvas.toDataURL('image/png');
-        console.log('Chart captured for PDF:', pieChartDataUrl ? 'success' : 'failed');
-        console.log('Data URL length:', pieChartDataUrl?.length);
+        // Capture the chart
+        const html2canvas = (await import('html2canvas')).default;
+        const canvas = await html2canvas(tempContainer, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          logging: false,
+          useCORS: true,
+          allowTaint: true
+        });
         
-        // Restore original styles
-        Object.assign(chartEl.style, originalStyle);
+        pieChartDataUrl = canvas.toDataURL('image/png');
+        console.log('Chart captured successfully, data URL length:', pieChartDataUrl?.length);
+        
+        // Clean up
+        root.unmount();
+        document.body.removeChild(tempContainer);
       } catch (e) {
-        console.error('Failed to capture chart:', e);
+        console.error('Failed to create and capture chart:', e);
       }
     } else {
-      console.log('Chart element not found in DOM');
+      console.log('No chart data available for PDF');
     }
     
     // Import and call the PDF function
     const { downloadAnalysisAsPDF } = await import('../utils/pdfUtils');
-    await downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
+    await downloadAnalysisAsPDF(result, chartData.length > 0 ? chartData : ancestryData, pieChartDataUrl);
   };
 
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {
