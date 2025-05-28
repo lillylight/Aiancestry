@@ -385,10 +385,7 @@ export async function downloadAnalysisAsPDF(
     doc.text('AI', pageWidth / 2, 335, { align: 'center' });
   }
   
-  // Add some decorative elements to fill space
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(1);
-  doc.line(100, 420, pageWidth - 100, 420);
+  // Removed decorative line below logo
   
   // Add a note at the bottom of cover page
   doc.setFont('helvetica', 'italic');
