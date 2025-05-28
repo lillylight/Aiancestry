@@ -418,7 +418,7 @@ export async function downloadAnalysisAsPDF(
         currentPara = '';
       }
       currentSection = 'comprehensive';
-      comprehensiveParas.push(trimmedLine);
+      // Don't add this line as content - it's just a section marker
       continue;
     }
     
