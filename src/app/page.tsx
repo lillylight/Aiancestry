@@ -235,10 +235,10 @@ export default function Home() {
         tempContainer.style.position = 'fixed';
         tempContainer.style.left = '-9999px';
         tempContainer.style.top = '-9999px';
-        tempContainer.style.width = '450px';
-        tempContainer.style.height = '550px';
-        tempContainer.style.background = '#f5f6fa';
-        tempContainer.style.padding = '20px';
+        tempContainer.style.width = '400px';
+        tempContainer.style.height = '500px';
+        tempContainer.style.background = 'white'; // White background
+        tempContainer.style.padding = '0'; // No padding to avoid gray area
         tempContainer.style.display = 'flex';
         tempContainer.style.alignItems = 'center';
         tempContainer.style.justifyContent = 'center';
