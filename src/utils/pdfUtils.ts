@@ -581,20 +581,26 @@ export async function downloadAnalysisAsPDF(
   // Ancestry Chart Page (Last Page) - Always add this page if we have data
   if (ancestryData && ancestryData.length > 0) {
     doc.addPage();
-    doc.setFillColor(252, 252, 255);
-    doc.rect(0, 0, pageWidth, pageHeight, 'F');
+    // No background color - keep it white
     
+    // Add the title as a page heading
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(15); // Title at 15pt
     doc.setTextColor('#23252b');
     doc.text('Ancestry Visualization', pageWidth / 2, 60, { align: 'center' });
     
+    // Add a decorative line under the title
+    doc.setDrawColor(47, 128, 237);
+    doc.setLineWidth(2);
+    doc.line((pageWidth - 250) / 2, 70, (pageWidth + 250) / 2, 70);
+    
     // Try to add the pie chart image using the same method as the logo
     let chartAdded = false;
-    const chartWidth = 350;
-    const chartHeight = 350;
+    // Use the requested width and proportional height
+    const chartWidth = 375;
+    const chartHeight = 450; // Adjusted height for just the chart and legend without title
     const chartX = (pageWidth - chartWidth) / 2;
-    const chartY = 100;
+    const chartY = 100; // Position below the page title
     
     // First try to use the provided chart image if available
     if (pieChartDataUrl) {

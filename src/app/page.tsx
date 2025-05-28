@@ -230,30 +230,41 @@ export default function Home() {
       try {
         console.log('Creating temporary chart for PDF with data:', chartData);
         
-        // Create a temporary container
+        // Create a temporary container with proper dimensions
         const tempContainer = document.createElement('div');
         tempContainer.style.position = 'fixed';
         tempContainer.style.left = '-9999px';
         tempContainer.style.top = '-9999px';
-        tempContainer.style.width = '400px';
-        tempContainer.style.height = '500px';
-        tempContainer.style.background = 'white';
+        tempContainer.style.width = '450px';
+        tempContainer.style.height = '550px';
+        tempContainer.style.background = '#f5f6fa';
+        tempContainer.style.padding = '20px';
+        tempContainer.style.display = 'flex';
+        tempContainer.style.alignItems = 'center';
+        tempContainer.style.justifyContent = 'center';
         document.body.appendChild(tempContainer);
         
         // Import React DOM for rendering
         const ReactDOM = (await import('react-dom/client')).default;
         const root = ReactDOM.createRoot(tempContainer);
         
-        // Render the chart
+        // Render the chart without the title (title will be in PDF page heading)
         await new Promise<void>((resolve) => {
           root.render(
-            <div style={{ padding: '20px', background: 'white' }}>
+            <div style={{ 
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              background: 'white',
+              padding: '20px'
+            }}>
               <AncestryPieChart data={chartData} />
             </div>
           );
           
           // Wait for chart to render
-          setTimeout(resolve, 1000);
+          setTimeout(resolve, 1500);
         });
         
         // Capture the chart
