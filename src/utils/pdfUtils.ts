@@ -311,24 +311,19 @@ export async function downloadAnalysisAsPDF(
   doc.setTextColor('#23252b');
   doc.text('Ancestry Analysis Report', pageWidth / 2, 120, { align: 'center' });
   
-  // Subtitle
+  // Date (moved up since subtitle is removed)
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(20); // Increased from 16
-  doc.setTextColor('#555');
-  doc.text('Generated with AI Ancestry', pageWidth / 2, 160, { align: 'center' });
-  
-  // Date
-    doc.setFontSize(13); // Legend text at 13pt
+  doc.setFontSize(13); // Legend text at 13pt
   doc.setTextColor('#888');
   doc.text('Date: ' + new Date().toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
-  }), pageWidth / 2, 200, { align: 'center' });
+  }), pageWidth / 2, 170, { align: 'center' });
   
   // User info - only show name if available, skip wallet
   const userInfo = getUserInfo();
-  let yOffset = 240;
+  let yOffset = 210; // Moved up since subtitle is removed
   
   if (userInfo.name) {
     doc.setFont('helvetica', 'normal');
