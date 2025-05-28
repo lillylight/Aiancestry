@@ -649,36 +649,7 @@ export async function downloadAnalysisAsPDF(
       drawSimplePieChart(doc, ancestryData, chartCenterX, chartCenterY, chartRadius);
     }
     
-    // Add legend below the chart
-    let legendY = 480;
-    const colors = [
-      [47, 128, 237],   // #2f80ed
-      [242, 153, 74],   // #f2994a
-      [39, 174, 96],    // #27ae60
-      [235, 87, 87],    // #eb5757
-      [155, 81, 224],   // #9b51e0
-      [86, 204, 242],   // #56ccf2
-      [242, 201, 76],   // #f2c94c
-      [111, 207, 151],  // #6fcf97
-      [187, 107, 217]   // #bb6bd9
-    ];
-    
-    doc.setFontSize(16);
-    ancestryData.forEach((item, i) => {
-      const color = colors[i % colors.length];
-      const legendX = pageWidth / 2 - 120;
-      
-      // Color box
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.rect(legendX, legendY - 12, 16, 16, 'F');
-      
-      // Text
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor('#23252b');
-      doc.text(`${item.region}: ${item.percent}%`, legendX + 25, legendY);
-      
-      legendY += 28;
-    });
+    // Legend is already included in the captured chart image, no need to add it again
   }
   
   // Save the PDF
