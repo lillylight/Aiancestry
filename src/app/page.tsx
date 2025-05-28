@@ -108,6 +108,9 @@ export default function Home() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const [ancestryData, setAncestryData] = useState<AncestryDatum[]>([]);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const analysisInProgressRef = React.useRef(false);
+  const paymentDetectedRef = React.useRef(false);
 
   // Add mounted state to prevent hydration issues
   useEffect(() => {
@@ -152,6 +155,13 @@ export default function Home() {
   };
 
   const triggerAnalysis = (file: File) => {
+    // Prevent multiple simultaneous analyses
+    if (analysisInProgressRef.current) {
+      console.log('[ANALYSIS] Analysis already in progress, skipping...');
+      return;
+    }
+    
+    analysisInProgressRef.current = true;
     setLoading(true);
     setProgress(10);
     const formData = new FormData();
@@ -179,6 +189,7 @@ export default function Home() {
       clearInterval(progressInterval);
       setProgress(100);
       setLoading(false);
+      analysisInProgressRef.current = false;
       if (xhr.status === 200) {
         const res = JSON.parse(xhr.responseText);
         setResult(res.analysis);
@@ -192,6 +203,7 @@ export default function Home() {
     };
     xhr.onerror = () => {
       setLoading(false);
+      analysisInProgressRef.current = false;
       setError("Failed to analyze image. Please try again.");
       setStep('upload');
     };
@@ -441,7 +453,11 @@ export default function Home() {
   useEffect(() => {
     // This effect should only run on the client side
     if (typeof window === 'undefined') return;
-    let paymentSuccessDetected = false;
+    
+    // Reset payment detection when image changes
+    if (!image) {
+      paymentDetectedRef.current = false;
+    }
 
     const logState = (msg: string) => {
       console.log(`[PAYMENT DEBUG] ${msg}`, { image, step });
@@ -449,40 +465,57 @@ export default function Home() {
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data) {
+        // Check for payment processing status
+        if (event.data.type === 'checkout-status-change' && event.data.status === 'pending') {
+          setPaymentProcessing(true);
+          logState('Payment processing started');
+        }
+        
         if (
           (event.data.type === 'checkout-status-change' && event.data.status === 'success') ||
           event.data.event_type === 'charge:confirmed' ||
           event.data.event_type === 'charge:resolved' ||
           event.data.event_type === 'charge:completed'
         ) {
-          if (paymentSuccessDetected) return;
-          paymentSuccessDetected = true;
+          if (paymentDetectedRef.current) return;
+          paymentDetectedRef.current = true;
           logState('Payment detected via postMessage');
+          setPaymentProcessing(false);
           setTimeout(() => {
             logState('Calling triggerAnalysis after payment (postMessage)');
-            if (image && step === 'upload') {
+            if (image && step === 'upload' && !analysisInProgressRef.current) {
               setStep('processing');
               triggerAnalysis(image);
             }
-          }, 3000);
+          }, 2000);
         }
       }
     };
     window.addEventListener('message', handleMessage);
 
     const checkForPaymentSuccess = () => {
-      if (paymentSuccessDetected) return;
+      if (paymentDetectedRef.current) return;
+      
+      // Check for payment in progress
+      const processingElements = document.querySelectorAll('.ock-text-body-color');
+      processingElements.forEach(element => {
+        if (element.textContent?.includes('Payment in progress')) {
+          setPaymentProcessing(true);
+        }
+      });
+      
       const successElements = document.querySelectorAll('.ock-text-success, .ock-success-message');
       if (successElements.length > 0) {
-        paymentSuccessDetected = true;
+        paymentDetectedRef.current = true;
         logState('Payment detected via DOM class');
+        setPaymentProcessing(false);
         setTimeout(() => {
           logState('Calling triggerAnalysis after payment (DOM class)');
-          if (image && step === 'upload') {
+          if (image && step === 'upload' && !analysisInProgressRef.current) {
             setStep('processing');
             triggerAnalysis(image);
           }
-        }, 3000);
+        }, 2000);
         return;
       }
       const allElements = document.querySelectorAll('*');
@@ -494,39 +527,47 @@ export default function Home() {
           element.textContent?.includes('Payment confirmed') ||
           element.textContent?.includes('View payment details')
         ) {
-          paymentSuccessDetected = true;
+          paymentDetectedRef.current = true;
           logState('Payment detected via DOM text');
+          setPaymentProcessing(false);
           setTimeout(() => {
             logState('Calling triggerAnalysis after payment (DOM text)');
-            if (image && step === 'upload') {
+            if (image && step === 'upload' && !analysisInProgressRef.current) {
               setStep('processing');
               triggerAnalysis(image);
             }
-          }, 3000);
+          }, 2000);
           return;
         }
       });
     };
 
     const observer = new MutationObserver((mutations) => {
-      if (paymentSuccessDetected) return;
+      if (paymentDetectedRef.current) return;
       mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as HTMLElement;
+              // Check for payment processing
+              if (element.textContent?.includes('Payment in progress')) {
+                setPaymentProcessing(true);
+                logState('Payment processing detected via MutationObserver');
+              }
+              
               const successElements = document.querySelectorAll('.ock-text-success, .ock-success-message');
               if (successElements.length > 0) {
-                if (paymentSuccessDetected) return;
-                paymentSuccessDetected = true;
+                if (paymentDetectedRef.current) return;
+                paymentDetectedRef.current = true;
                 logState('Payment detected via MutationObserver class');
+                setPaymentProcessing(false);
                 setTimeout(() => {
                   logState('Calling triggerAnalysis after payment (MutationObserver class)');
-                  if (image && step === 'upload') {
+                  if (image && step === 'upload' && !analysisInProgressRef.current) {
                     setStep('processing');
                     triggerAnalysis(image);
                   }
-                }, 3000);
+                }, 2000);
               }
               if (
                 element.textContent?.includes('Payment successful') ||
@@ -535,12 +576,12 @@ export default function Home() {
                 element.textContent?.includes('Payment confirmed') ||
                 element.textContent?.includes('View payment details')
               ) {
-                if (paymentSuccessDetected) return;
-                paymentSuccessDetected = true;
+                if (paymentDetectedRef.current) return;
+                paymentDetectedRef.current = true;
                 logState('Payment detected via MutationObserver text');
                 setTimeout(() => {
                   logState('Calling triggerAnalysis after payment (MutationObserver text)');
-                  if (image && step === 'upload') {
+                  if (image && step === 'upload' && !analysisInProgressRef.current) {
                     setStep('processing');
                     triggerAnalysis(image);
                   }
@@ -770,11 +811,25 @@ export default function Home() {
                 {/* Move h2 slightly higher */}
                 <h2 className="text-2xl font-bold text-blue-500 mb-6 mt-2" style={{position:'relative', top: '-0.75rem'}}>Analyzing Image...</h2>
                 <div className="w-full max-w-md px-4 mb-4 mt-2">
-                  <div className="h-6 w-6 md:h-16 md:w-16 bg-blue-500 rounded-full transition-all duration-300 ease-out flex items-center justify-center mx-auto" style={{ width: 96, height: 96, minWidth: 48, minHeight: 48 }}>
-                    <span className="text-white text-sm font-semibold">{progress}%</span>
+                  <div className="relative">
+                    <div 
+                      className={`h-24 w-24 bg-blue-500 rounded-full transition-all duration-300 ease-out flex items-center justify-center mx-auto ${progress >= 95 ? 'animate-pulse' : ''}`}
+                      style={{ width: 96, height: 96, minWidth: 48, minHeight: 48 }}
+                    >
+                      <span className="text-white text-sm font-semibold">{progress}%</span>
+                    </div>
+                    {progress >= 95 && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-28 w-28 rounded-full border-4 border-blue-300 border-t-transparent animate-spin"></div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <p className="text-gray-400 text-base mt-2">Please wait while we analyze your image for ancestry features.</p>
+                <p className="text-gray-400 text-base mt-2">
+                  {progress >= 95 
+                    ? "Finalizing your ancestry analysis..." 
+                    : "Please wait while we analyze your image for ancestry features."}
+                </p>
               </div>
             )}
             {/* Always render result panel, only show content if step is 'result' */}
@@ -818,6 +873,34 @@ export default function Home() {
                     <button className="openai-btn openai-btn-light flex items-center gap-2" onClick={()=>handleShare('copy')}>Copy Link</button>
                   </div>
                   <button className="text-blue-400 mt-3 underline" onClick={()=>setShowShareModal(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+            
+            {/* Payment Processing Overlay */}
+            {paymentProcessing && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-sm mx-4">
+                  <div className="relative">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="absolute -bottom-1 -right-1">
+                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center animate-bounce">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800">Processing Payment</h3>
+                  <p className="text-gray-600 text-center">Please wait while we verify your payment...</p>
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                    <span className="text-blue-600 text-sm font-medium">Verifying transaction</span>
+                  </div>
                 </div>
               </div>
             )}
