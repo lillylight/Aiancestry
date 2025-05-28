@@ -74,23 +74,10 @@ export default function Home() {
   // Use wagmi's useAccount hook for reliable wallet connection detection
   const { isConnected, address } = useAccount();
   const [mounted, setMounted] = useState(false);
-  // Set global user info for PDF generation
+  // Set global user name for PDF generation
   useEffect(() => {
-    if (typeof window !== 'undefined' && address) {
-      // Store wallet address
-      (window as any).userWalletAddress = address;
-      (window as any).walletAddress = address;
-      
-      // Try to get the displayed name from the Name component
-      // Check for basename or ENS name in the DOM
-      setTimeout(() => {
-        const nameElement = document.querySelector('[data-testid="ockIdentity_Text"]');
-        const displayName = nameElement?.textContent || address;
-        
-        (window as any).aiAncestryUserName = displayName;
-        (window as any).userBasename = displayName;
-        (window as any).userName = displayName;
-      }, 1000);
+    if (typeof window !== 'undefined') {
+      (window as any).aiAncestryUserName = address || '';
     }
   }, [address]);
   
@@ -202,97 +189,17 @@ export default function Home() {
   const handleDownloadPDF = async () => {
     // Try to get the pie chart image as PNG
     let pieChartDataUrl: string | undefined = undefined;
-    
-    // Parse ancestry data for the chart
-    let chartData: AncestryDatum[] = [];
-    
-    // First try to get data from the summary table
-    const tableMatch = result.match(/\| *Region\/Group *\| *Estimated Percentage *\| *Key Traits.*\|[\s\S]*?(\|.*\|.*\|.*\|\n?)+/);
-    if (tableMatch) {
-      const rows = tableMatch[0].trim().split(/\n/).filter(Boolean);
-      if (rows.length >= 3) {
-        chartData = rows.slice(2).map(row => {
-          const cells = row.split('|').slice(1,-1).map(cell => cell.trim());
-          const region = cells[0];
-          const percent = parseInt(cells[1].replace(/[^\d]/g, ''), 10);
-          return region && !isNaN(percent) ? { region, percent } : null;
-        }).filter((item): item is { region: string; percent: number } => item !== null);
-      }
-    }
-    
-    // Fallback to ancestryData if no table data
-    if (!chartData.length && ancestryData && ancestryData.length) {
-      chartData = ancestryData;
-    }
-    
-    // If we have data, create a temporary chart for capture
-    if (chartData.length > 0) {
+    const chartEl = document.querySelector(".ancestry-pie-chart-capture") as HTMLElement;
+    if (chartEl) {
       try {
-        console.log('Creating temporary chart for PDF with data:', chartData);
-        
-        // Create a temporary container with proper dimensions
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'fixed';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.width = '400px';
-        tempContainer.style.height = '500px';
-        tempContainer.style.background = 'white'; // White background
-        tempContainer.style.padding = '0'; // No padding to avoid gray area
-        tempContainer.style.display = 'flex';
-        tempContainer.style.alignItems = 'center';
-        tempContainer.style.justifyContent = 'center';
-        document.body.appendChild(tempContainer);
-        
-        // Import React DOM for rendering
-        const ReactDOM = (await import('react-dom/client')).default;
-        const root = ReactDOM.createRoot(tempContainer);
-        
-        // Render the chart without the title (title will be in PDF page heading)
-        await new Promise<void>((resolve) => {
-          root.render(
-            <div style={{ 
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              background: 'white',
-              padding: '20px'
-            }}>
-              <AncestryPieChart data={chartData} />
-            </div>
-          );
-          
-          // Wait for chart to render
-          setTimeout(resolve, 1500);
-        });
-        
-        // Capture the chart
-        const html2canvas = (await import('html2canvas')).default;
-        const canvas = await html2canvas(tempContainer, {
-          backgroundColor: '#ffffff',
-          scale: 2,
-          logging: false,
-          useCORS: true,
-          allowTaint: true
-        });
-        
-        pieChartDataUrl = canvas.toDataURL('image/png');
-        console.log('Chart captured successfully, data URL length:', pieChartDataUrl?.length);
-        
-        // Clean up
-        root.unmount();
-        document.body.removeChild(tempContainer);
+        pieChartDataUrl = await chartToImage(chartEl);
       } catch (e) {
-        console.error('Failed to create and capture chart:', e);
+        // fallback: no chart image
       }
-    } else {
-      console.log('No chart data available for PDF');
     }
-    
-    // Import and call the PDF function
-    const { downloadAnalysisAsPDF } = await import('../utils/pdfUtils');
-    await downloadAnalysisAsPDF(result, chartData.length > 0 ? chartData : ancestryData, pieChartDataUrl);
+    import('../utils/pdfUtils').then(({ downloadAnalysisAsPDF }) => {
+      downloadAnalysisAsPDF(result, ancestryData, pieChartDataUrl);
+    });
   };
 
   const handleShare = (platform: 'twitter' | 'facebook' | 'copy') => {
@@ -560,7 +467,7 @@ export default function Home() {
       observer.disconnect();
       clearInterval(interval);
     };
-  }, [image, step, triggerAnalysis]);
+  }, [image, step]);
 
   return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-[#f8f9fa] to-[#e5e7eb] py-12 relative">
@@ -647,6 +554,13 @@ export default function Home() {
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
+              </div> */}
+              {/* <div className="flex justify-center">
+                <div className="animate-bounce bg-indigo-600 p-2 w-10 h-10 ring-1 ring-indigo-400/50 shadow-lg rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                  </svg>
+                </div>
               </div> */}
             </div>
           </div>
