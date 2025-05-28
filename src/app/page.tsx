@@ -203,33 +203,61 @@ export default function Home() {
     // Try to get the pie chart image as PNG
     let pieChartDataUrl: string | undefined = undefined;
     
+    // First ensure we're on the pie chart slide
+    if (carouselIndex !== 3) {
+      setCarouselIndex(3);
+      // Wait for the slide transition
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    // Wait a bit more to ensure chart is fully rendered
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
     // First try to find the chart wrapper
     const chartEl = document.querySelector(".ancestry-pie-chart-wrapper") as HTMLElement;
+    console.log('Chart element found:', !!chartEl);
+    
     if (chartEl) {
       try {
-        // Create a temporary canvas to capture the chart
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        // Make sure the element is visible
+        const originalStyle = {
+          position: chartEl.style.position,
+          left: chartEl.style.left,
+          top: chartEl.style.top,
+          visibility: chartEl.style.visibility,
+          display: chartEl.style.display
+        };
         
-        // Set canvas size
-        canvas.width = 400;
-        canvas.height = 500;
+        // Temporarily make it visible if needed
+        chartEl.style.position = 'relative';
+        chartEl.style.left = 'auto';
+        chartEl.style.top = 'auto';
+        chartEl.style.visibility = 'visible';
+        chartEl.style.display = 'block';
         
         // Use html2canvas to capture the chart
         const html2canvas = (await import('html2canvas')).default;
         const capturedCanvas = await html2canvas(chartEl, {
           backgroundColor: '#ffffff',
           scale: 2,
-          logging: false,
+          logging: true,
           useCORS: true,
           allowTaint: true,
+          width: 400,
+          height: 500
         });
         
         pieChartDataUrl = capturedCanvas.toDataURL('image/png');
         console.log('Chart captured for PDF:', pieChartDataUrl ? 'success' : 'failed');
+        console.log('Data URL length:', pieChartDataUrl?.length);
+        
+        // Restore original styles
+        Object.assign(chartEl.style, originalStyle);
       } catch (e) {
         console.error('Failed to capture chart:', e);
       }
+    } else {
+      console.log('Chart element not found in DOM');
     }
     
     // Import and call the PDF function

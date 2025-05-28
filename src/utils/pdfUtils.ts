@@ -581,8 +581,8 @@ export async function downloadAnalysisAsPDF(
     doc.text('Note: Percentages are AI-generated estimates based on facial analysis.', pageWidth / 2, pageHeight - 60, { align: 'center' });
   }
   
-  // Ancestry Chart Page (Last Page)
-  if (ancestryData && ancestryData.length > 0 && pieChartDataUrl) {
+  // Ancestry Chart Page (Last Page) - Always add this page if we have data
+  if (ancestryData && ancestryData.length > 0) {
     doc.addPage();
     doc.setFillColor(252, 252, 255);
     doc.rect(0, 0, pageWidth, pageHeight, 'F');
@@ -599,41 +599,52 @@ export async function downloadAnalysisAsPDF(
     const chartX = (pageWidth - chartWidth) / 2;
     const chartY = 100;
     
-    try {
-      if (typeof window !== 'undefined' && pieChartDataUrl) {
-        // Create an image element
-        const img = new Image();
-        img.src = pieChartDataUrl;
-        
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => {
-            try {
-              // Create a canvas to ensure proper image handling
-              const canvas = document.createElement('canvas');
-              canvas.width = img.width;
-              canvas.height = img.height;
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                ctx.drawImage(img, 0, 0);
-                const dataUrl = canvas.toDataURL('image/png');
-                doc.addImage(dataUrl, 'PNG', chartX, chartY, chartWidth, chartHeight);
+    // First try to use the provided chart image if available
+    if (pieChartDataUrl) {
+      console.log('Attempting to add pie chart from data URL...');
+      try {
+        if (typeof window !== 'undefined') {
+          // Create an image element
+          const img = new Image();
+          img.src = pieChartDataUrl;
+          
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Image load timeout'));
+            }, 5000);
+            
+            img.onload = () => {
+              clearTimeout(timeout);
+              try {
+                console.log('Pie chart image loaded, adding to PDF...');
+                // Add the image directly since it's already a data URL
+                doc.addImage(pieChartDataUrl, 'PNG', chartX, chartY, chartWidth, chartHeight);
                 chartAdded = true;
+                console.log('Pie chart added successfully!');
+                resolve();
+              } catch (error) {
+                console.error('Error adding pie chart to PDF:', error);
+                reject(error);
               }
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          };
-          img.onerror = () => reject(new Error('Failed to load chart image'));
-        });
+            };
+            
+            img.onerror = () => {
+              clearTimeout(timeout);
+              console.error('Failed to load pie chart image');
+              reject(new Error('Failed to load chart image'));
+            };
+          });
+        }
+      } catch (error) {
+        console.log('Could not add pie chart image to PDF:', error);
       }
-    } catch (error) {
-      console.log('Could not add pie chart to PDF:', error);
+    } else {
+      console.log('No pie chart data URL provided');
     }
     
-    // If image failed, draw a simple chart as fallback
+    // If image failed or wasn't provided, draw a simple chart as fallback
     if (!chartAdded) {
-      console.log('Drawing fallback chart...');
+      console.log('Drawing fallback pie chart...');
       const chartCenterX = pageWidth / 2;
       const chartCenterY = 280;
       const chartRadius = 120;
