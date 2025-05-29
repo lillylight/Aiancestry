@@ -22,7 +22,7 @@ interface ChartCaptureProps {
   onCapture: (dataUrl: string) => void;
 }
 
-export default function ChartCapture({ data, onCapture }: ChartCaptureProps) {
+export default function ChartCapture({ data, c }: ChartCaptureProps) {
   const captureRef = useRef<HTMLDivElement>(null);
   const hasCapture = useRef(false);
 
