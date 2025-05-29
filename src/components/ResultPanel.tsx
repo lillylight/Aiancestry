@@ -119,14 +119,29 @@ export default function ResultPanel({
                 <pre className="whitespace-pre-wrap text-xs bg-[#18191a] p-2 rounded border border-gray-700 overflow-x-auto max-h-52 floating-result-text !text-[#23252b] !opacity-100 !text-shadow-none text-center">
                   {(() => {
                     if (!result) return '';
-                    const compStartIdx = result.toLowerCase().indexOf('comprehensive ancestry percentage breakdown');
-                    if (compStartIdx === -1) return result;
-                    const afterComp = result.slice(compStartIdx);
+                    
+                    // Remove numbers at the start of lines (e.g. "1.", "2) ")
+                    let cleaned = result.replace(/^\s*\d+[.)]\s*/gm, '');
+                    
+                    // Remove any remaining numbers followed by a dot and space at the start of a line
+                    cleaned = cleaned.replace(/^\d+\.\s*/gm, '');
+                    
+                    // Remove any standalone numbers between paragraphs
+                    cleaned = cleaned.replace(/\n\s*\d+\s*\n/g, '\n\n');
+                    
+                    // Clean up any double newlines that might have been created
+                    cleaned = cleaned.replace(/\n{3,}/g, '\n\n');
+                    
+                    // Handle the comprehensive breakdown section
+                    const compStartIdx = cleaned.toLowerCase().indexOf('comprehensive ancestry percentage breakdown');
+                    if (compStartIdx === -1) return cleaned;
+                    
+                    const afterComp = cleaned.slice(compStartIdx);
                     const dashIdx = afterComp.indexOf('---');
-                    let shown = dashIdx !== -1 ? result.slice(0, compStartIdx) + afterComp.slice(0, dashIdx) : result;
-                    // Remove any numbers at the start of a line (e.g. "1.", "2.", etc) before headings/titles, but keep the line content
-                    shown = shown.replace(/^[0-9]+\.(?=\s)/gm, '');
-                    return shown;
+                    
+                    return dashIdx !== -1 
+                      ? cleaned.slice(0, compStartIdx) + afterComp.slice(0, dashIdx) 
+                      : cleaned;
                   })()}
                 </pre>
               </div>
